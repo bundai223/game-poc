@@ -4,7 +4,23 @@ Godot を使い、物理演算やグラフィックスの仕組みを、触っ�
 
 ## 現在の状態
 
-企画・準備段階です。このリポジトリにはまだ Godot プロジェクトや実行可能なデモはありません。Godot のバージョン、セットアップ手順、実行コマンドは [開発環境の Issue](https://github.com/bundai223/game-poc/issues/9) で整備する予定です。
+開発環境の準備段階です。Godot の最小シーンは起動できますが、お絵描き物理デモはまだ実装されていません。
+
+## 開発環境と起動
+
+Mac 上の [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-stable/) と `make` を使用します。Godot を `/Applications/Godot.app` に配置し、リポジトリのルートで実行してください。
+
+```sh
+make import  # アセットをヘッドレスでインポート
+make editor  # エディタを開く
+make run     # 最小シーンを起動
+```
+
+別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
+
+`make test` と `make export-web` は入口のみで、現在は未設定の旨を表示して失敗します。テスト基盤は [#16](https://github.com/bundai223/game-poc/issues/16)、Web ビルドは [#17](https://github.com/bundai223/game-poc/issues/17) で整備します。Web エクスポートの準備には、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
+
+テスト基盤の候補である [GdUnit4 の互換表](https://github.com/godot-gdunit-labs/gdUnit4#compatibility-overview)には Godot 4.7.1 まで記載されています。4.7.2 との互換性は #16 で実際に確認します。
 
 ## 最初に作るもの
 
