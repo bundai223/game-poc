@@ -14,11 +14,16 @@ Mac 上の [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-s
 make import  # アセットをヘッドレスでインポート
 make editor  # エディタを開く
 make run     # 最小シーンを起動
+make export-web # build/web/ に Web 版を出力
 ```
 
 別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
 
-`make test` と `make export-web` は入口のみで、現在は未設定の旨を表示して失敗します。テスト基盤は [#16](https://github.com/bundai223/game-poc/issues/16)、Web ビルドは [#17](https://github.com/bundai223/game-poc/issues/17) で整備します。Web エクスポートの準備には、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
+`make test` は入口のみで、現在は未設定の旨を表示して失敗します。テスト基盤は [#16](https://github.com/bundai223/game-poc/issues/16) で整備します。Web エクスポートには、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
+
+Web 版はシングルスレッドの Compatibility 設定です。`make export-web` の後、`python3 -m http.server 8000 --bind 127.0.0.1 --directory build/web` を実行し、同じ Mac のブラウザで `http://127.0.0.1:8000/` を開けます。停止するにはサーバーを実行したターミナルで Ctrl+C を押します。共有や実機検証は [#18](https://github.com/bundai223/game-poc/issues/18) で進めます。
+
+`main` への push 時には GitHub Actions が Web 版をビルドし、GitHub Pages に公開します。
 
 テスト基盤の候補である [GdUnit4 の互換表](https://github.com/godot-gdunit-labs/gdUnit4#compatibility-overview)には Godot 4.7.1 まで記載されています。4.7.2 との互換性は #16 で実際に確認します。
 
