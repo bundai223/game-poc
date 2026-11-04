@@ -1,8 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://6ogtxcdyjelg"]
 
-[node name="DrawPhysics" type="Node2D"]
+[node name="DrawPhysics" type="Node2D" unique_id=1491809033]
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=1101562830]
 offset_left = 32.0
 offset_top = 32.0
 offset_right = 400.0
