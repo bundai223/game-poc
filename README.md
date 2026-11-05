@@ -19,7 +19,7 @@ make run     # 最小シーンを起動
 make export-web # build/web/ に Web 版を出力
 ```
 
-別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。ggg が PATH にない場合は `make setup GGG=/path/to/ggg` のように指定できます。Godot を使う各 Make ターゲットは先に ggg で環境を同期します。`ggg.toml` が Godot と GdUnit4 6.2.3 を宣言し、`ggg.lock` が addon の取得元と archive hash を固定します。addon のファイルは Git 管理しません。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
+別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。ggg が PATH にない場合は、各コマンドに `GGG=/path/to/ggg` を指定してください。Godot を使う各 Make ターゲットは先に ggg で環境を同期します。`ggg.toml` が Godot と GdUnit4 6.2.3 を宣言し、`ggg.lock` が addon の取得元と archive hash を固定します。addon のファイルは Git 管理しません。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
 
 既存の `addons/gdUnit4` が ggg 管理外の場合、`make setup` は競合として停止し、上書きや削除をしません。移行前にディレクトリをプロジェクト外へバックアップし、内容を確認してから退避してください。初回取得にはネットワーク接続が必要です。
 
