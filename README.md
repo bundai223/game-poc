@@ -20,7 +20,7 @@ make export-web # build/web/ に Web 版を出力
 
 別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
 
-Godot 4.7.2 と GdUnit4 6.2.3 を固定しています。`make test` はエディターを開かずにテストを実行します。Mac では通常どおり実行できます。Linux での実行と CI への組み込みは未確認で、[#17](https://github.com/bundai223/game-poc/issues/17) で対応します。Linux で `godot` が PATH にある場合のコマンドは `make test GODOT=godot` です。テストは `tests/` に置き、幾何計算、Node/Collider の生成、固定物理ステップの最小例を含みます。描画品質やタッチ操作はヘッドレステストの対象外です。
+Godot 4.7.2 と GdUnit4 6.2.3 を固定しています。`make test` はエディターを開かずにテストを実行します。Mac では通常どおり実行できます。GitHub Actions に、pull request ごとに Ubuntu 上で import、テスト、Web export を順に実行し、`build/web/` を Artifact として保存する設定を追加しました。ローカル Linux での実行は未確認です。Linux で `godot` が PATH にある場合のコマンドは `make test GODOT=godot` です。テストは `tests/` に置き、幾何計算、Node/Collider の生成、固定物理ステップの最小例を含みます。描画品質やタッチ操作はヘッドレステストの対象外です。
 
 Web エクスポートには、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
 
