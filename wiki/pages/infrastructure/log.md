@@ -4,3 +4,4 @@
 - 2026-11-05 [Update] Godot 開発環境: ヘッドレステストの実行と制約を記録（raw/decisions/0004-ヘッドレステスト.md）
 - 2026-11-05 [Update] Godot 開発環境: pull request CI の手順と未検証事項を記録（raw/issues/2026-11-05_17/ci-workflow.md）
 - 2026-11-05 [Update] Godot 開発環境: Web export からテストを除外（raw/decisions/0005-Web出力のテスト除外.md）
+- 2026-11-05 [Update] Godot 開発環境: Ubuntu CI と Artifact 取得を確認（raw/issues/2026-11-05_17/ci-verification.md）
