@@ -8,10 +8,10 @@ Godot を使い、物理演算やグラフィックスの仕組みを、触っ�
 
 ## 開発環境と起動
 
-Mac 上の [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-stable/) と `make` を使用します。Godot を `/Applications/Godot.app` に配置し、リポジトリのルートで実行してください。
+Mac 上の [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-stable/)、[ggg 0.6.0](https://github.com/godotneers/ggg/releases/tag/v0.6.0)、`make` を使用します。Godot を `/Applications/Godot.app` に配置し、ggg を PATH に通してリポジトリのルートで実行してください。ggg の導入方法は[公式手順](https://godotneers.github.io/ggg/)を参照してください。
 
 ```sh
-make setup   # GdUnit4 6.2.3 を検証して導入
+make setup   # Godot 4.7.2 と GdUnit4 6.2.3 を同期
 make import  # アセットをヘッドレスでインポート
 make test    # ヘッドレステストを実行
 make editor  # エディタを開く
@@ -19,9 +19,11 @@ make run     # 最小シーンを起動
 make export-web # build/web/ に Web 版を出力
 ```
 
-別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。Godot を使う各 Make ターゲットは先に GdUnit4 をセットアップします。`make setup` は既存の同バージョンを再利用し、異なる版や不完全な `addons/gdUnit4` がある場合は上書きせず停止します。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
+別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。ggg が PATH にない場合は `make setup GGG=/path/to/ggg` のように指定できます。Godot を使う各 Make ターゲットは先に ggg で環境を同期します。`ggg.toml` が Godot と GdUnit4 6.2.3 を宣言し、`ggg.lock` が addon の取得元と archive hash を固定します。addon のファイルは Git 管理しません。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
 
-Godot 4.7.2 と GdUnit4 6.2.3 を固定しています。GdUnit4 は GitHub の v6.2.3 archive を SHA256 検証して導入し、addon ファイル自体は Git 管理しません。`make test` はエディターを開かずにテストを実行します。GitHub Actions に、pull request ごとに Ubuntu 上で import、テスト、Web export を順に実行し、`build/web/` を Artifact として保存する設定を追加しました。ローカル Linux での実行は未確認です。Linux で `godot` が PATH にある場合のコマンドは `make test GODOT=godot` です。テストは `tests/` に置き、幾何計算、Node/Collider の生成、固定物理ステップの最小例を含みます。描画品質やタッチ操作はヘッドレステストの対象外です。
+既存の `addons/gdUnit4` が ggg 管理外の場合、`make setup` は競合として停止し、上書きや削除をしません。移行前にディレクトリをプロジェクト外へバックアップし、内容を確認してから退避してください。初回取得にはネットワーク接続が必要です。
+
+`make test` はエディターを開かずにテストを実行します。GitHub Actions は pull request ごとに Ubuntu 上で import、テスト、Web export を実行し、`build/web/` を Artifact として保存します。ローカル Linux での実行は未確認です。Linux で `godot` が PATH にある場合のコマンドは `make test GODOT=godot` です。テストは `tests/` に置き、幾何計算、Node/Collider の生成、固定物理ステップの最小例を含みます。描画品質やタッチ操作はヘッドレステストの対象外です。
 
 Web エクスポートには、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
 

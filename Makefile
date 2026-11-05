@@ -1,12 +1,13 @@
 GODOT ?= /Applications/Godot.app/Contents/MacOS/Godot
-GDUNIT4_VERSION := 6.2.3
-GDUNIT4_URL := https://github.com/godot-gdunit-labs/gdUnit4/archive/refs/tags/v$(GDUNIT4_VERSION).tar.gz
-GDUNIT4_SHA256 := 42dc61721b1b6bc40dac0ff34a71d2b0811ca92109add0b923ad01f96f04abf8
+GGG ?= ggg
 
 .PHONY: setup editor run import test export-web
 
 setup:
-	GDUNIT4_VERSION="$(GDUNIT4_VERSION)" GDUNIT4_URL="$(GDUNIT4_URL)" GDUNIT4_SHA256="$(GDUNIT4_SHA256)" ./scripts/setup-gdunit4.sh
+	@command -v "$(GGG)" >/dev/null || { echo "ggg 0.6.0 が必要です。README の開発環境手順に従ってインストールするか、make setup GGG=/path/to/ggg を指定してください。"; exit 1; }
+	@"$(GGG)" --version | grep -qx 'ggg 0.6.0' || { echo "ggg 0.6.0 が必要です。"; exit 1; }
+	@command -v "$(GODOT)" >/dev/null || { echo "Godot が実行できません: $(GODOT)"; exit 1; }
+	"$(GGG)" sync --godot "$$(command -v "$(GODOT)")"
 
 editor: setup
 	"$(GODOT)" --editor --path .
