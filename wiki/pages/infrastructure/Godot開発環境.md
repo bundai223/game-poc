@@ -2,12 +2,13 @@
 title: Godot 開発環境
 genre: infrastructure
 summary: Mac で Godot の最小シーンを起動するための構成と検証状況。
-updated: 2026-11-04
+updated: 2026-11-05
 confidence: high
 status: active
 sources:
   - raw/decisions/0001-Godot開発環境.md
   - raw/decisions/0002-Webエクスポート.md
+  - raw/decisions/0004-ヘッドレステスト.md
 ---
 
 # Godot 開発環境
@@ -18,4 +19,4 @@ Godot 4.7.2 stable と Compatibility レンダラーを採用し、Mac ネイテ
 
 Web 用テンプレートは構築した Mac に配置済み。シングルスレッドの Web 版をエクスポートし、ローカルブラウザで最小シーンの表示を確認した。Tailscale 限定共有の URL から HTML と WebAssembly を取得できたが、リモート端末での表示・操作は未確認。
 
-GdUnit4 と Godot 4.7.2 の実動互換性は未確認で、テスト基盤導入時に検証する。
+Godot 4.7.2 と GdUnit4 6.2.3 の組み合わせで、`make test` による 3 件のヘッドレステストと故意の失敗の検出を Mac で確認した。Linux CI は未確認。
