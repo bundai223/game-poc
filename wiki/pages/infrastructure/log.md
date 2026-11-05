@@ -7,3 +7,4 @@
 - 2026-11-05 [Update] Godot 開発環境: Ubuntu CI と Artifact 取得を確認（raw/issues/2026-11-05_17/ci-verification.md）
 - 2026-11-05 [Update] Godot 開発環境: GdUnit4 addon の固定・検証付きセットアップを追加（raw/decisions/0006-GdUnit4依存の自動セットアップ.md）
 - 2026-11-05 [Update] Godot 開発環境: ggg で依存と lock を管理し Pages CI の ggg を固定（raw/decisions/0007-ggg依存管理.md）
+- 2026-11-05 [Update] Godot 開発環境: ggg 導入後の Ubuntu CI を確認（raw/issues/2026-11-05_17/ggg-ci-verification.md）
