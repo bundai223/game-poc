@@ -90,3 +90,16 @@ func test_excessively_long_stroke_is_discarded() -> void:
 		demo._input(move)
 	assert_bool(demo._drawing).is_false()
 	assert_int(demo._created_bodies.size()).is_zero()
+
+
+func test_reset_button_removes_drawn_bodies() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var points := PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)])
+	demo.spawn_body(points)
+	var button := demo.find_child("ResetButton", true, false) as Button
+	assert_object(button).is_not_null()
+	if button == null:
+		return
+	button.pressed.emit()
+	assert_int(demo._created_bodies.size()).is_zero()
