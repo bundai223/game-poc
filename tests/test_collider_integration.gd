@@ -1,14 +1,92 @@
 extends GdUnitTestSuite
 
+const DrawPhysics = preload("res://experiments/draw_physics/main.tscn")
 
-func test_circle_collider_is_attached_to_body() -> void:
-	var body := StaticBody2D.new()
-	var collider := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
-	circle.radius = 12.0
-	collider.shape = circle
-	body.add_child(collider)
-	add_child(body)
 
-	assert_bool(collider.get_parent() == body).is_true()
-	assert_float((collider.shape as CircleShape2D).radius).is_equal_approx(12.0, 0.001)
+func test_drag_creates_matching_polygon_and_collision_nodes() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(100, 100)
+	demo._input(press)
+	var move := InputEventMouseMotion.new()
+	move.position = Vector2(200, 100)
+	demo._input(move)
+	move.position = Vector2(150, 200)
+	demo._input(move)
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.position = Vector2(150, 200)
+	demo._input(release)
+
+	assert_int(demo._created_bodies.size()).is_equal(1)
+	var body: RigidBody2D = demo._created_bodies[0]
+	var visual: Polygon2D = body.get_child(0)
+	var collider: CollisionPolygon2D = body.get_child(1)
+	assert_bool(visual.polygon == collider.polygon).is_true()
+	assert_bool(body.position.distance_to(Vector2(150, 133.3333)) < 0.01).is_true()
+
+
+func test_single_touch_creates_one_body_and_reset_removes_it() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	for position in [Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)]:
+		var touch := InputEventScreenTouch.new()
+		touch.index = 0
+		touch.pressed = true
+		touch.position = position
+		demo._input(touch)
+		if position == Vector2(200, 100):
+			var mouse := InputEventMouseButton.new()
+			mouse.button_index = MOUSE_BUTTON_LEFT
+			mouse.pressed = true
+			mouse.position = position
+			demo._input(mouse)
+			mouse.pressed = false
+			demo._input(mouse)
+		var drag := InputEventScreenDrag.new()
+		drag.index = 0
+		drag.position = position
+		demo._input(drag)
+	var release := InputEventScreenTouch.new()
+	release.index = 0
+	release.position = Vector2(150, 200)
+	demo._input(release)
+	assert_int(demo._created_bodies.size()).is_equal(1)
+	demo.reset()
+	assert_int(demo._created_bodies.size()).is_zero()
+
+
+func test_cancelled_touch_does_not_create_body() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	touch.position = Vector2(100, 100)
+	demo._input(touch)
+	for position in [Vector2(200, 100), Vector2(150, 200)]:
+		var drag := InputEventScreenDrag.new()
+		drag.position = position
+		demo._input(drag)
+	touch.pressed = false
+	touch.canceled = true
+	demo._input(touch)
+	assert_int(demo._created_bodies.size()).is_zero()
+	assert_bool(demo._drawing).is_false()
+
+
+func test_excessively_long_stroke_is_discarded() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	demo._input(press)
+	var move := InputEventMouseMotion.new()
+	for i in range(2049):
+		move.position = Vector2(i * 4, 100)
+		demo._input(move)
+	assert_bool(demo._drawing).is_false()
+	assert_int(demo._created_bodies.size()).is_zero()

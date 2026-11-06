@@ -4,7 +4,7 @@ Godot を使い、物理演算やグラフィックスの仕組みを、触っ�
 
 ## 現在の状態
 
-開発環境の準備段階です。Godot の最小シーンは起動できますが、お絵描き物理デモはまだ実装されていません。
+Godot で手描きの凸形状を剛体に変え、床への落下と衝突を試せます。
 
 ## 開発環境と起動
 
@@ -15,7 +15,7 @@ make setup   # Godot 4.7.2 と GdUnit4 6.2.3 を同期
 make import  # アセットをヘッドレスでインポート
 make test    # ヘッドレステストを実行
 make editor  # エディタを開く
-make run     # 最小シーンを起動
+make run     # お絵描き物理 PoC を起動
 make export-web # build/web/ に Web 版を出力
 ```
 
@@ -33,9 +33,13 @@ Web 版はシングルスレッドの Compatibility 設定です。`make export-
 
 GdUnit4 の互換表は Godot 4.7.1 までの記載ですが、リポジトリ内の GdUnit4 6.2.3 runner で Godot 4.7.2 のヘッドレス実行を確認しています。
 
-## 最初に作るもの
+## お絵描き物理 PoC
 
-マウスなどで描いた閉じた形を物理オブジェクトに変え、落下や床との衝突を観察できる 2D デモを目指します。まず Mac 上で動かし、その後 Web プレビューやブラウザ・モバイル実機での検証を進めます。
+`make run` で起動し、マウスまたは1本指でドラッグして閉じた形を描きます。入力を離すと形が落下し、床に当たります。`R` キーで作成した形を消して描き直せます。
+
+輪郭は `PackedVector2Array` の点列として `outline.gd` が検証します。近接点とほぼ一直線の点を簡略化し、3〜32頂点、面積500平方ピクセル以上の凸形状だけを受け付けます。非有限座標、自己交差、凹形状は破棄します。入力点が2048点を超えた場合も描画を破棄します。輪郭のモデルは Node に依存しません。表示用 `Polygon2D` と物理用 `CollisionPolygon2D` は同じ輪郭点列から生成します。
+
+CLI の unit、Node/Collider、固定物理ステップテストは `make test` で実行できます。GdUnit4 のヘッドレス実行は実際のマウス・タッチ操作を配信しないため、ドラッグ入力の見た目と実機タッチはウィンドウ上で確認してください。Mac、Android、iPad の Web 操作確認は [#18](https://github.com/bundai223/game-poc/issues/18) で行います。
 
 - [開発環境と CLI の準備 #9](https://github.com/bundai223/game-poc/issues/9)
 - [ヘッドレス自動テスト #16](https://github.com/bundai223/game-poc/issues/16)
