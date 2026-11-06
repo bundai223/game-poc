@@ -1,0 +1,39 @@
+name: Godot CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ggg 0.6.0
+        run: |
+          curl -fL 'https://github.com/godotneers/ggg/releases/download/v0.6.0/ggg-x86_64-unknown-linux-gnu.tar.xz' -o /tmp/ggg.tar.xz
+          echo '769586eaec6c4a80efbe05f28f108da029058db01fdd326172b961f0b803249a  /tmp/ggg.tar.xz' | sha256sum -c -
+          mkdir -p /tmp/ggg
+          tar -xJf /tmp/ggg.tar.xz -C /tmp/ggg --strip-components=1
+      - name: Install Godot 4.7.2 and Web export templates
+        run: |
+          curl -fL 'https://downloads.godotengine.org/?version=4.7.2&flavor=stable&slug=linux.x86_64.zip&platform=linux.64' -o /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          curl -fL 'https://downloads.godotengine.org/?version=4.7.2&flavor=stable&slug=export_templates.tpz&platform=templates' -o /tmp/templates.tpz
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.7.2.stable"
+          unzip -q -j /tmp/templates.tpz 'templates/version.txt' 'templates/web*.zip' -d "$HOME/.local/share/godot/export_templates/4.7.2.stable"
+      - name: Import project assets
+        run: make import GODOT=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64 GGG=/tmp/ggg/ggg
+      - name: Run headless tests
+        run: make test GODOT=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64 GGG=/tmp/ggg/ggg
+      - name: Export Web build
+        run: make export-web GODOT=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64 GGG=/tmp/ggg/ggg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: godot-web-build
+          path: build/web
+          if-no-files-found: error
+          retention-days: 7

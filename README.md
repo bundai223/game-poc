@@ -21,7 +21,9 @@ make export-web # build/web/ に Web 版を出力
 
 別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。ggg が PATH にない場合は、各コマンドに `GGG=/path/to/ggg` を指定してください。Godot を使う各 Make ターゲットは先に ggg で環境を同期します。`ggg.toml` が Godot と GdUnit4 6.2.3 を宣言し、`ggg.lock` が addon の取得元と archive hash を固定します。addon のファイルは Git 管理しません。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
 
-Godot 4.7.2 と GdUnit4 6.2.3 を固定しています。ggg は `ggg.toml` と `ggg.lock` に基づいて GdUnit4 を同期し、addon ファイル自体は Git 管理しません。既存の `addons/gdUnit4` が ggg 管理外の場合、`make setup` は競合として停止し、上書きや削除をしません。移行前にそのディレクトリをプロジェクト外へバックアップし、既存の内容が不要だと確認できた後でのみ退避または削除してから再実行してください。ネットワーク接続も必要です。`make test` はエディターを開かずにテストを実行します。Linux で `godot` が PATH にある場合のコマンドは `make test GODOT=godot` です。テストは `tests/` に置き、幾何計算、Node/Collider の生成、固定物理ステップの最小例を含みます。描画品質やタッチ操作はヘッドレステストの対象外です。
+既存の `addons/gdUnit4` が ggg 管理外の場合、`make setup` は競合として停止し、上書きや削除をしません。移行前にディレクトリをプロジェクト外へバックアップし、内容を確認してから退避してください。初回取得にはネットワーク接続が必要です。
+
+`make test` はエディターを開かずにテストを実行します。GitHub Actions は pull request ごとに Ubuntu 上で import、テスト、Web export を実行し、`build/web/` を Artifact として保存します。ローカル Linux での実行は未確認です。Linux で `godot` が PATH にある場合のコマンドは `make test GODOT=godot` です。テストは `tests/` に置き、幾何計算、Node/Collider の生成、固定物理ステップの最小例を含みます。描画品質やタッチ操作はヘッドレステストの対象外です。
 
 Web エクスポートには、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
 
