@@ -8,24 +8,28 @@ Godot を使い、物理演算やグラフィックスの仕組みを、触っ�
 
 ## 開発環境と起動
 
-Mac 上の [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-stable/) と `make` を使用します。Godot を `/Applications/Godot.app` に配置し、リポジトリのルートで実行してください。
+Mac 上の [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-stable/)、[ggg 0.6.0](https://github.com/godotneers/ggg/releases/tag/v0.6.0)、`make` を使用します。Godot を `/Applications/Godot.app` に配置し、ggg を PATH に通してリポジトリのルートで実行してください。ggg の導入方法は[公式手順](https://godotneers.github.io/ggg/)を参照してください。
 
 ```sh
+make setup   # Godot 4.7.2 と GdUnit4 6.2.3 を同期
 make import  # アセットをヘッドレスでインポート
+make test    # ヘッドレステストを実行
 make editor  # エディタを開く
 make run     # 最小シーンを起動
 make export-web # build/web/ に Web 版を出力
 ```
 
-別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
+別の場所に Godot がある場合は `make run GODOT=/path/to/Godot` のように実行ファイルを指定できます。ggg が PATH にない場合は、各コマンドに `GGG=/path/to/ggg` を指定してください。Godot を使う各 Make ターゲットは先に ggg で環境を同期します。`ggg.toml` が Godot と GdUnit4 6.2.3 を宣言し、`ggg.lock` が addon の取得元と archive hash を固定します。addon のファイルは Git 管理しません。`.godot/` は生成物のため Git で管理せず、シーンなどのプロジェクトファイルと Godot が生成する `.uid` ファイルは管理対象にします。
 
-`make test` は入口のみで、現在は未設定の旨を表示して失敗します。テスト基盤は [#16](https://github.com/bundai223/game-poc/issues/16) で整備します。Web エクスポートには、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
+Godot 4.7.2 と GdUnit4 6.2.3 を固定しています。ggg は `ggg.toml` と `ggg.lock` に基づいて GdUnit4 を同期し、addon ファイル自体は Git 管理しません。既存の `addons/gdUnit4` が ggg 管理外の場合、`make setup` は競合として停止し、上書きや削除をしません。移行前にそのディレクトリをプロジェクト外へバックアップし、既存の内容が不要だと確認できた後でのみ退避または削除してから再実行してください。ネットワーク接続も必要です。`make test` はエディターを開かずにテストを実行します。Linux で `godot` が PATH にある場合のコマンドは `make test GODOT=godot` です。テストは `tests/` に置き、幾何計算、Node/Collider の生成、固定物理ステップの最小例を含みます。描画品質やタッチ操作はヘッドレステストの対象外です。
+
+Web エクスポートには、Godot の「エディター → エクスポートテンプレートを管理」から 4.7.2 のテンプレートをインストールしてください。
 
 Web 版はシングルスレッドの Compatibility 設定です。`make export-web` の後、`python3 -m http.server 8000 --bind 127.0.0.1 --directory build/web` を実行し、同じ Mac のブラウザで `http://127.0.0.1:8000/` を開けます。停止するにはサーバーを実行したターミナルで Ctrl+C を押します。共有や実機検証は [#18](https://github.com/bundai223/game-poc/issues/18) で進めます。
 
 `main` への push 時には GitHub Actions が Web 版をビルドし、GitHub Pages に公開します。
 
-テスト基盤の候補である [GdUnit4 の互換表](https://github.com/godot-gdunit-labs/gdUnit4#compatibility-overview)には Godot 4.7.1 まで記載されています。4.7.2 との互換性は #16 で実際に確認します。
+GdUnit4 の互換表は Godot 4.7.1 までの記載ですが、リポジトリ内の GdUnit4 6.2.3 runner で Godot 4.7.2 のヘッドレス実行を確認しています。
 
 ## 最初に作るもの
 

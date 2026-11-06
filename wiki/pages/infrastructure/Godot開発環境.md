@@ -2,12 +2,16 @@
 title: Godot 開発環境
 genre: infrastructure
 summary: Mac で Godot の最小シーンを起動するための構成と検証状況。
-updated: 2026-11-04
+updated: 2026-11-05
 confidence: high
 status: active
 sources:
   - raw/decisions/0001-Godot開発環境.md
   - raw/decisions/0002-Webエクスポート.md
+  - raw/decisions/0004-ヘッドレステスト.md
+  - raw/decisions/0005-Web出力のテスト除外.md
+  - raw/decisions/0006-GdUnit4依存の自動セットアップ.md
+  - raw/decisions/0007-ggg依存管理.md
 ---
 
 # Godot 開発環境
@@ -18,4 +22,8 @@ Godot 4.7.2 stable と Compatibility レンダラーを採用し、Mac ネイテ
 
 Web 用テンプレートは構築した Mac に配置済み。シングルスレッドの Web 版をエクスポートし、ローカルブラウザで最小シーンの表示を確認した。Tailscale 限定共有の URL から HTML と WebAssembly を取得できたが、リモート端末での表示・操作は未確認。
 
-GdUnit4 と Godot 4.7.2 の実動互換性は未確認で、テスト基盤導入時に検証する。
+Godot 4.7.2 と GdUnit4 6.2.3 の組み合わせで、`make test` による 3 件のヘッドレステストと故意の失敗の検出を Mac で確認した。Linux CI は未確認。
+
+Web export には GdUnit4 とテストを含めない。addon を含めると export が異常終了したため、Mac で除外後の出力を確認した。修正後の Linux CI は未確認。
+
+GdUnit4 6.2.3 の addon は Git 管理せず、`ggg.toml` と `ggg.lock` に取得元と SHA256 を固定する。Godot を呼ぶ Make ターゲットは `ggg sync` を先に実行する。scratch 環境では同期、アセット import、3 件のテストが成功し、既存ファイルとの競合時には ggg が停止してファイルを保護することを確認した。Pages workflow は公式 ggg 0.6.0 Linux archive の SHA256 を検証する。GitHub Actions 上の実行結果は未確認。

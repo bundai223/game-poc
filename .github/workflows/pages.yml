@@ -22,6 +22,13 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Install ggg 0.6.0
+        run: |
+          curl -fL 'https://github.com/godotneers/ggg/releases/download/v0.6.0/ggg-x86_64-unknown-linux-gnu.tar.xz' -o /tmp/ggg.tar.xz
+          echo '769586eaec6c4a80efbe05f28f108da029058db01fdd326172b961f0b803249a  /tmp/ggg.tar.xz' | sha256sum -c -
+          mkdir -p /tmp/ggg
+          tar -xJf /tmp/ggg.tar.xz -C /tmp/ggg --strip-components=1
+          chmod +x /tmp/ggg/ggg
       - name: Install Godot and Web export templates
         run: |
           curl -fL 'https://downloads.godotengine.org/?version=4.7.2&flavor=stable&slug=linux.x86_64.zip&platform=linux.64' -o /tmp/godot.zip
@@ -31,8 +38,8 @@ jobs:
           unzip -q -j /tmp/templates.tpz 'templates/version.txt' 'templates/web*.zip' -d "$HOME/.local/share/godot/export_templates/4.7.2.stable"
       - name: Export Web build
         run: |
-          make import GODOT=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
-          make export-web GODOT=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64
+          make import GODOT=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64 GGG=/tmp/ggg/ggg
+          make export-web GODOT=/tmp/godot/Godot_v4.7.2-stable_linux.x86_64 GGG=/tmp/ggg/ggg
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web

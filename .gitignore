@@ -1,4 +1,7 @@
 /.godot/
 /build/
+/reports/
+/addons/gdUnit4/
+.ggg.state
 !/raw/
 !/wiki/
