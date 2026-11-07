@@ -23,12 +23,24 @@ func _ready() -> void:
 
 	var instructions := Label.new()
 	instructions.position = Vector2(24.0, 20.0)
-	instructions.text = "Drag to draw a convex shape. Release to drop it. Press R to reset."
+	instructions.text = "Drag to draw a convex shape. Release to drop it."
 	add_child(instructions)
+	var controls := CanvasLayer.new()
+	add_child(controls)
+	var reset_button := Button.new()
+	reset_button.name = "ResetButton"
+	reset_button.text = "Reset"
+	reset_button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	reset_button.offset_left = -216.0
+	reset_button.offset_top = 16.0
+	reset_button.offset_right = -24.0
+	reset_button.offset_bottom = 104.0
+	reset_button.pressed.connect(reset)
+	controls.add_child(reset_button)
 	queue_redraw()
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		reset()
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
