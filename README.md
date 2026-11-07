@@ -31,6 +31,8 @@ Web 版はシングルスレッドの Compatibility 設定です。`make export-
 
 `main` への push 時には GitHub Actions が Web 版をビルドし、GitHub Pages に公開します。
 
+ブラウザ E2E は Node.js 22、Python 3、Web エクスポートテンプレートが必要です。リポジトリのルートで `npm ci`、`npx playwright install chromium`、`make import`、`make export-web`、`npm run test:e2e` を順に実行します。Chromium で読み込み、マウス描画、`R` キーによる消去を確認します。PR の CI でも実行します。Android・iPad の実機操作は別途確認が必要です。
+
 GdUnit4 の互換表は Godot 4.7.1 までの記載ですが、リポジトリ内の GdUnit4 6.2.3 runner で Godot 4.7.2 のヘッドレス実行を確認しています。
 
 ## お絵描き物理 PoC
