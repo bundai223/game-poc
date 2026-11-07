@@ -1,6 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('Web 版で形を描いてリセットできる', async ({ page }) => {
+  expect(false).toBe(true);
   await page.goto('/');
   const canvas = page.locator('canvas');
   await expect(canvas).toBeVisible();
