@@ -6,6 +6,8 @@ Godot を使い、物理演算やグラフィックスの仕組みを、触っ�
 
 Godot で手描きの凸形状を剛体に変え、床への落下と衝突を試せます。
 
+Web 版: https://bundai223.github.io/game-poc/
+
 ## 開発環境と起動
 
 Mac 上の [Godot 4.7.2 stable](https://godotengine.org/download/archive/4.7.2-stable/)、[ggg 0.6.0](https://github.com/godotneers/ggg/releases/tag/v0.6.0)、`make` を使用します。Godot を `/Applications/Godot.app` に配置し、ggg を PATH に通してリポジトリのルートで実行してください。ggg の導入方法は[公式手順](https://godotneers.github.io/ggg/)を参照してください。
@@ -31,7 +33,7 @@ Web 版はシングルスレッドの Compatibility 設定です。`make export-
 
 `main` への push 時には GitHub Actions が Web 版をビルドし、GitHub Pages に公開します。
 
-ブラウザ E2E は Node.js 22、Python 3、Web エクスポートテンプレートが必要です。リポジトリのルートで `npm ci`、`npx playwright install chromium`、`make import`、`make export-web`、`npm run test:e2e` を順に実行します。Chromium で読み込み、マウス描画、`R` キーによる消去を確認します。PR の CI でも実行します。Android・iPad の実機操作は別途確認が必要です。
+ブラウザ E2E は Node.js 22、Python 3、Web エクスポートテンプレートが必要です。リポジトリのルートで `npm ci`、`npx playwright install chromium`、`make import`、`make export-web`、`npm run test:e2e` を順に実行します。Chromium で読み込み、マウス描画、`R` キーによる消去を確認します。PR の CI でも実行します。Android では利用者が Reset を含む操作に問題がないことを確認しました。iPad の実機操作は未確認です。
 
 GdUnit4 の互換表は Godot 4.7.1 までの記載ですが、リポジトリ内の GdUnit4 6.2.3 runner で Godot 4.7.2 のヘッドレス実行を確認しています。
 
@@ -41,7 +43,7 @@ GdUnit4 の互換表は Godot 4.7.1 までの記載ですが、リポジトリ�
 
 輪郭は `PackedVector2Array` の点列として `outline.gd` が検証します。近接点とほぼ一直線の点を簡略化し、3〜32頂点、面積500平方ピクセル以上の凸形状だけを受け付けます。非有限座標、自己交差、凹形状は破棄します。入力点が2048点を超えた場合も描画を破棄します。輪郭のモデルは Node に依存しません。表示用 `Polygon2D` と物理用 `CollisionPolygon2D` は同じ輪郭点列から生成します。
 
-CLI の unit、Node/Collider、固定物理ステップテストは `make test` で実行できます。GdUnit4 のヘッドレス実行は実際のマウス・タッチ操作を配信しないため、ドラッグ入力の見た目と実機タッチはウィンドウ上で確認してください。Mac、Android、iPad の Web 操作確認は [#18](https://github.com/bundai223/game-poc/issues/18) で行います。
+CLI の unit、Node/Collider、固定物理ステップテストは `make test` で実行できます。GdUnit4 のヘッドレス実行は実際のマウス・タッチ操作を配信しないため、ドラッグ入力の見た目と実機タッチはウィンドウ上で確認してください。Web 操作確認は [#18](https://github.com/bundai223/game-poc/issues/18) で進めています。
 
 - [開発環境と CLI の準備 #9](https://github.com/bundai223/game-poc/issues/9)
 - [ヘッドレス自動テスト #16](https://github.com/bundai223/game-poc/issues/16)
