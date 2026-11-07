@@ -8,6 +8,16 @@ permissions:
   contents: read
 
 jobs:
+  dagger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Dagger verification
+        uses: dagger/dagger-for-github@v8.4.0
+        with:
+          version: v0.21.11
+          module: .dagger
+          call: verify --source . --output /tmp/game-poc-dagger-web
   verify:
     runs-on: ubuntu-latest
     steps:

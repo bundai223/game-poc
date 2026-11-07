@@ -35,6 +35,18 @@ Web 版はシングルスレッドの Compatibility 設定です。`make export-
 
 ブラウザ E2E は Node.js 22、Python 3、Web エクスポートテンプレートが必要です。リポジトリのルートで `npm ci`、`npx playwright install chromium`、`make import`、`make export-web`、`npm run test:e2e` を順に実行します。Chromium で読み込み、マウス描画、`R` キーによる消去を確認します。PR の CI でも実行します。Android では利用者が Reset を含む操作に問題がないことを確認しました。iPad の実機操作は未確認です。
 
+### Dagger によるローカル CI
+
+Dagger 0.21.11 と Docker 互換の Linux コンテナ環境が必要です。Mac の Apple Silicon では `brew install dagger docker colima` で導入した Dagger 0.21.11、Docker CLI 29.9.2、Colima 0.10.3 を使用しました。Homebrew が別の版を導入する場合は、[Dagger の公式インストール手順](https://docs.dagger.io/getting-started/install/)で 0.21.11 を指定してください。
+
+Colima は `colima start --cpu 4 --memory 6 --disk 30 --vm-type vz --vz-rosetta` で起動しました。起動時には Docker の接続先が切り替わります。
+
+```sh
+dagger -m .dagger call verify --source . --output build/dagger-web
+```
+
+Godot のインポート、ヘッドレステスト、Web 出力と Playwright の E2E を実行します。エラー時は非ゼロで終了します。Godot のビルドは Linux x86_64、ブラウザは Engine の CPU アーキテクチャで動きます。Apple Silicon で x86_64 Chromium はクラッシュしたため、ブラウザには ARM64 を使います。初回は約 1.2 GiB の Godot テンプレートに加え、ブラウザとコンテナイメージの取得が必要です。同じ入力の再実行はキャッシュを使うためテストが再実行されない場合があります。GitHub 固有の workflow や成果物保存は GitHub Actions で確認します。Colima は不要になれば `colima stop` で停止できます。
+
 GdUnit4 の互換表は Godot 4.7.1 までの記載ですが、リポジトリ内の GdUnit4 6.2.3 runner で Godot 4.7.2 のヘッドレス実行を確認しています。
 
 ## お絵描き物理 PoC
