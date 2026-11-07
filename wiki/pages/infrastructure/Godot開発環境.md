@@ -2,7 +2,7 @@
 title: Godot 開発環境
 genre: infrastructure
 summary: Mac で Godot の最小シーンを起動するための構成と検証状況。
-updated: 2026-11-05
+updated: 2026-11-07
 confidence: high
 status: active
 sources:
@@ -15,6 +15,7 @@ sources:
   - raw/decisions/0006-GdUnit4依存の自動セットアップ.md
   - raw/decisions/0007-ggg依存管理.md
   - raw/issues/2026-11-05_17/ggg-ci-verification.md
+  - raw/issues/2026-11-07_24/local-dagger.md
 ---
 
 # Godot 開発環境
@@ -30,3 +31,5 @@ Godot 4.7.2 と GdUnit4 6.2.3 の組み合わせで、`make test` による 3 �
 Web export には GdUnit4 とテストを含めない。addon を含めると export が異常終了したため、除外後の出力を Mac と GitHub Actions の Ubuntu で確認した。
 
 GdUnit4 6.2.3 の addon は Git 管理せず、`ggg.toml` と `ggg.lock` に取得元と SHA256 を固定する。Godot を呼ぶ Make ターゲットは `ggg sync` を先に実行する。Mac と GitHub Actions の Ubuntu で依存の同期、3 件のテスト、Web export を確認した。既存ファイルとの競合時には ggg が停止してファイルを保護する。Pages workflow 自体の実行結果は未確認。
+
+Apple Silicon の Mac では、Colima 上の Dagger 0.21.11 で Linux x86_64 の Godot テスト 14 件と Web 出力、ARM64 Chromium の E2E 1 件が成功した。x86_64 Chromium はページ作成時にクラッシュした。GitHub Actions 上での Dagger 実行は未確認。
