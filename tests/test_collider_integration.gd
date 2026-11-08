@@ -137,3 +137,23 @@ func test_touch_drag_through_viewport_creates_body() -> void:
 	touch.position = Vector2(150, 200)
 	get_viewport().push_input(touch)
 	assert_int(demo._created_bodies.size()).is_equal(1)
+
+
+func test_touch_drag_with_nonzero_index_creates_body() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	await get_tree().process_frame
+	var touch := InputEventScreenTouch.new()
+	touch.index = 1
+	touch.pressed = true
+	touch.position = Vector2(100, 100)
+	get_viewport().push_input(touch)
+	var drag := InputEventScreenDrag.new()
+	drag.index = 1
+	for position in [Vector2(200, 100), Vector2(150, 200)]:
+		drag.position = position
+		get_viewport().push_input(drag)
+	touch.pressed = false
+	touch.position = Vector2(150, 200)
+	get_viewport().push_input(touch)
+	assert_int(demo._created_bodies.size()).is_equal(1)
