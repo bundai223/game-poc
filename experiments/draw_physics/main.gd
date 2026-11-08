@@ -50,7 +50,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_finish_draw(to_local(event.position))
 	elif event is InputEventMouseMotion and _drawing and _touch_index == -1:
 		_add_point(to_local(event.position))
-	elif event is InputEventScreenTouch and event.index == 0:
+	elif event is InputEventScreenTouch:
 		if event.canceled and event.index == _touch_index:
 			_drawing = false
 			_touch_index = -1
