@@ -11,3 +11,4 @@
 - 2026-11-07 [Update] Godot 開発環境: Dagger のローカル検証結果を追加（raw/issues/2026-11-07_24/local-dagger.md）
 - 2026-11-07 [Update] Godot 開発環境: GitHub Actions 上の Dagger 正常系を確認（raw/issues/2026-11-07_24/github-dagger.md）
 - 2026-11-07 [Update] Godot 開発環境: GitHub Actions 上の E2E 失敗検出を確認（raw/issues/2026-11-07_24/github-dagger-failure.md）
+- 2026-11-09 [Update] Godot 開発環境: Issue #24 完了とローカル Podman 検証保留・試験用マシン削除を記録（raw/issues/2026-11-09_24/closure.md）
