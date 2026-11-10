@@ -1,0 +1,4 @@
+[[dependency]]
+name = "gdunit4"
+url = "https://github.com/godot-gdunit-labs/gdUnit4/archive/refs/tags/v6.2.3.tar.gz"
+archive_sha = "42dc61721b1b6bc40dac0ff34a71d2b0811ca92109add0b923ad01f96f04abf8"
