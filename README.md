@@ -53,13 +53,14 @@ GdUnit4 の互換表は Godot 4.7.1 までの記載ですが、リポジトリ�
 
 `make run` で起動し、マウスまたは1本指でドラッグして閉じた形を描きます。入力を離すと形が落下し、床に当たります。画面右上の `Reset` ボタンまたは `R` キーで作成した形を消して描き直せます。
 
-輪郭は `PackedVector2Array` の点列として `outline.gd` が検証します。近接点とほぼ一直線の点を簡略化し、3〜32頂点、面積500平方ピクセル以上の凸形状だけを受け付けます。非有限座標、自己交差、凹形状は破棄します。入力点が2048点を超えた場合も描画を破棄します。輪郭のモデルは Node に依存しません。表示用 `Polygon2D` と物理用 `CollisionPolygon2D` は同じ輪郭点列から生成します。
+輪郭は `PackedVector2Array` の点列として `outline.gd` が検証します。近接点とほぼ一直線の点を簡略化し、3〜32頂点、面積500平方ピクセル以上の凸形状だけを受け付けます。非有限座標、自己交差、凹形状は破棄します。入力点が2048点を超えた場合も描画を破棄します。`outline_data.gd` はNodeに依存しない輪郭データとバージョン付きJSON変換を持ち、`rigid_body_adapter.gd` がそのデータから `RigidBody2D`、`Polygon2D`、`CollisionPolygon2D` を生成します。`part_data.gd` は3D部品IDとTransformの値モデルです。両モデルのJSON往復はテストで確認します。アプリ画面からのファイル保存・読み込み機能はまだありません。モデルはGodotの `Vector2` / `Transform3D` 型を使い、Godotランタイム外や別エンジンでの実行は未検証です。
 
 CLI の unit、Node/Collider、固定物理ステップテストは `make test` で実行できます。GdUnit4 のヘッドレス実行は実際のマウス・タッチ操作を配信しないため、ドラッグ入力の見た目と実機タッチはウィンドウ上で確認してください。Web 操作確認は [#18](https://github.com/bundai223/game-poc/issues/18) で進めています。
 
 - [開発環境と CLI の準備 #9](https://github.com/bundai223/game-poc/issues/9)
 - [ヘッドレス自動テスト #16](https://github.com/bundai223/game-poc/issues/16)
 - [2D お絵描き物理 PoC #8](https://github.com/bundai223/game-poc/issues/8)
+- [エンジン非依存モデル #10](https://github.com/bundai223/game-poc/issues/10)
 - [CI と Web ビルド #17](https://github.com/bundai223/game-poc/issues/17)
 - [Web プレビューと実機検証 #18](https://github.com/bundai223/game-poc/issues/18)
 
