@@ -1,6 +1,8 @@
 extends Node2D
 
 const Outline = preload("res://experiments/draw_physics/outline.gd")
+const OutlineData = preload("res://experiments/draw_physics/outline_data.gd")
+const RigidBodyAdapter = preload("res://experiments/draw_physics/rigid_body_adapter.gd")
 const FLOOR_Y := 560.0
 const FLOOR_WIDTH := 10000.0
 const FLOOR_HEIGHT := 32.0
@@ -76,23 +78,8 @@ func reset() -> void:
 	queue_redraw()
 
 
-func spawn_body(points: PackedVector2Array) -> RigidBody2D:
-	var origin := Vector2.ZERO
-	for point in points:
-		origin += point
-	origin /= points.size()
-	var local_points := PackedVector2Array()
-	for point in points:
-		local_points.append(point - origin)
-	var body := RigidBody2D.new()
-	body.position = origin
-	var visual := Polygon2D.new()
-	visual.polygon = local_points
-	visual.color = Color(0.2, 0.68, 0.95)
-	body.add_child(visual)
-	var collider := CollisionPolygon2D.new()
-	collider.polygon = local_points
-	body.add_child(collider)
+func spawn_body(outline: OutlineData) -> RigidBody2D:
+	var body := RigidBodyAdapter.create_body(outline)
 	add_child(body)
 	_created_bodies.append(body)
 	return body
@@ -124,7 +111,7 @@ func _finish_draw(point: Vector2) -> void:
 	var points := Outline.prepare(_outline)
 	_outline.clear()
 	if not points.is_empty():
-		spawn_body(points)
+		spawn_body(OutlineData.new(points))
 	queue_redraw()
 
 

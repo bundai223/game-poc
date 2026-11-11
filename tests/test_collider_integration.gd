@@ -1,6 +1,7 @@
 extends GdUnitTestSuite
 
 const DrawPhysics = preload("res://experiments/draw_physics/main.tscn")
+const OutlineData = preload("res://experiments/draw_physics/outline_data.gd")
 
 
 func test_drag_creates_matching_polygon_and_collision_nodes() -> void:
@@ -96,7 +97,7 @@ func test_reset_button_removes_drawn_bodies() -> void:
 	var demo := DrawPhysics.instantiate()
 	add_child(demo)
 	var points := PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)])
-	demo.spawn_body(points)
+	demo.spawn_body(OutlineData.new(points))
 	var button := demo.find_child("ResetButton", true, false) as Button
 	assert_object(button).is_not_null()
 	if button == null:
@@ -109,7 +110,7 @@ func test_touching_reset_button_is_not_a_drawing() -> void:
 	var demo := DrawPhysics.instantiate()
 	add_child(demo)
 	await get_tree().process_frame
-	demo.spawn_body(PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)]))
+	demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)])))
 	var button := demo.find_child("ResetButton", true, false) as Button
 	var touch := InputEventScreenTouch.new()
 	touch.position = button.get_global_rect().get_center()

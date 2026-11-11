@@ -3,7 +3,7 @@
 | ジャンル | 内容 | ページ数 |
 | --- | --- | ---: |
 | [user-experiences](pages/user-experiences/index.md) | 操作体験と利用時の発見 | 0 |
-| [architecture](pages/architecture/index.md) | データモデル、構成、設計判断 | 0 |
+| [architecture](pages/architecture/index.md) | データモデル、構成、設計判断 | 1 |
 | [security](pages/security/index.md) | セキュリティ上の制約と対策 | 0 |
 | [infrastructure](pages/infrastructure/index.md) | 開発環境、CI、配布 | 2 |
 | [templates](pages/templates/index.md) | 再利用する記録・作業テンプレート | 0 |
