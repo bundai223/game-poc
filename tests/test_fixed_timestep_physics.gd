@@ -23,5 +23,5 @@ func test_outline_falls_and_stops_at_the_floor() -> void:
 	var body: RigidBody2D = demo.spawn_body(OutlineData.new(points))
 	for _frame in 120:
 		await get_tree().physics_frame
-	assert_bool(body.position.y > 450.0 and body.position.y < 550.0).is_true()
+	assert_bool(body.position.y > demo._floor_y - 100.0 and body.position.y < demo._floor_y).is_true()
 	assert_bool(absf(body.linear_velocity.y) < 10.0).is_true()
