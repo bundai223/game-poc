@@ -7,3 +7,4 @@
 - 2026-11-07 [Update] 手描き輪郭の剛体化: Chromium でのブラウザ E2E を追加（raw/issues/2026-11-06_18/browser-e2e.md）
 - 2026-11-07 [Update] 手描き輪郭の剛体化: 利用者による Android 操作確認を記録（raw/issues/2026-11-06_18/android-user-check.md）
 - 2026-11-08 [Update] 手描き輪郭の剛体化: 非ゼロのタッチ接触IDで描画できない問題を修正・検証（raw/issues/2026-11-08_18/ipad-touch-index.md）
+- 2026-11-12 [Update] 手描き輪郭の剛体化: 凹形状も受け付けるよう輪郭制約を更新（raw/issues/2026-11-12_8/concave-outlines.md）

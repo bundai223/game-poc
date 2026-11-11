@@ -8,13 +8,14 @@ status: active
 sources:
   - raw/issues/2026-11-11_10/model-and-adapter.md
   - raw/issues/2026-11-11_10/part-transform-model.md
+  - raw/issues/2026-11-12_8/concave-outlines.md
 ---
 
 # 輪郭モデルとGodot変換境界
 
 ## 現在の分割
 
-- `outline.gd` は輪郭点列の簡略化と凸形状の検証を行う。
+- `outline.gd` は輪郭点列を簡略化し、面積・頂点数・自己交差などを検証する。凹形状も受け付ける。
 - `outline_data.gd` は2D輪郭点列を保持し、バージョン付きJSONへ変換・復元する。NodeやSceneTreeを必要としない。
 - `part_data.gd` は3D部品IDと `Transform3D` を値データとして保持し、バージョン付きJSONへ変換・復元する。
 - `rigid_body_adapter.gd` は輪郭データから `RigidBody2D` と表示・衝突用Polygonを作る。
