@@ -32,7 +32,7 @@ static func prepare(input: PackedVector2Array) -> PackedVector2Array:
 		return PackedVector2Array()
 
 	var area_twice := 0.0
-	var turn_sign := 0.0
+	var has_turn := false
 	for index in range(points.size()):
 		var a := points[index]
 		var b := points[(index + 1) % points.size()]
@@ -40,10 +40,8 @@ static func prepare(input: PackedVector2Array) -> PackedVector2Array:
 		area_twice += a.cross(b)
 		var turn := (b - a).cross(c - b)
 		if absf(turn) > EPSILON:
-			if turn_sign != 0.0 and signf(turn) != turn_sign:
-				return PackedVector2Array()
-			turn_sign = signf(turn)
-	if absf(area_twice) / 2.0 < MIN_AREA or turn_sign == 0.0:
+			has_turn = true
+	if absf(area_twice) / 2.0 < MIN_AREA or not has_turn:
 		return PackedVector2Array()
 
 	for first in range(points.size()):

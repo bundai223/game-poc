@@ -30,6 +30,27 @@ func test_drag_creates_matching_polygon_and_collision_nodes() -> void:
 	assert_bool(body.position.distance_to(Vector2(150, 133.3333)) < 0.01).is_true()
 
 
+func test_concave_stroke_creates_a_body() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var points := PackedVector2Array([Vector2(100, 100), Vector2(300, 100), Vector2(220, 150), Vector2(300, 300), Vector2(100, 300)])
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = points[0]
+	demo._unhandled_input(press)
+	var move := InputEventMouseMotion.new()
+	for index in range(1, points.size()):
+		move.position = points[index]
+		demo._unhandled_input(move)
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.position = points[0]
+	demo._unhandled_input(release)
+
+	assert_int(demo._created_bodies.size()).is_equal(1)
+
+
 func test_single_touch_creates_one_body_and_reset_removes_it() -> void:
 	var demo := DrawPhysics.instantiate()
 	add_child(demo)
