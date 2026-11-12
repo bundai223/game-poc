@@ -18,3 +18,4 @@
 - 2026-11-13 [Update] Issue単位の開発運用: GitHub tracker と raw/wiki の記録先を整理（raw/conversations/2026-11-13_開発スキルと記録先.md）
 - 2026-11-13 [Update] Issue単位の開発運用: 運用ルールを Issue #51 と紐付け（raw/issues/2026-11-13_51/issue-created.md）
 - 2026-11-13 [Update] Issue単位の開発運用: Issue 内容の確認を実装開始条件に追加（raw/issues/2026-11-13_51/scope-update.md）
+- 2026-11-13 [Update] Issue単位の開発運用: 節目・発見・push 前の Wiki 更新を明記（raw/issues/2026-11-13_51/update-wiki-trigger.md）
