@@ -15,3 +15,5 @@
 - 2026-11-12 [Update] 3D物理クラフト: ヒンジ軸の一次診断を訂正し、車体推進力を併用（raw/issues/2026-11-12_11/vehicle-craft-driving-correction.md）
 - 2026-11-12 [Update] 3D物理クラフト: Linux CIとMacで揺れる移動方向assertを移動量検証に変更（raw/issues/2026-11-12_11/vehicle-craft-ci-physics.md）
 - 2026-11-12 [Update] 3D物理クラフト: PR #32のverifyとDagger CI成功を記録（raw/issues/2026-11-12_11/vehicle-craft-ci-result.md）
+- 2026-11-12 [Update] 3D物理クラフト: 既定車を4輪にしVehicle UIをASCII化、保存済み旧標準形を移行（raw/issues/2026-11-12_34/vehicle-4wheel-ui.md）
+- 2026-11-12 [Update] 3D物理クラフト: Issue #34の全33テスト成功と実機確認待ちを記録（raw/issues/2026-11-12_34/vehicle-4wheel-ui-verification.md）

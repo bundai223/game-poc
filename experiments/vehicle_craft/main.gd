@@ -26,7 +26,7 @@ func _ready() -> void:
 		_load_vehicle()
 	_show_editor()
 	if not has_saved_vehicle:
-		_update_status("部品を置いて車を組み立てます。選択して移動・削除できます。")
+		_update_status("Place parts. Select, move or delete them.")
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -134,28 +134,28 @@ func _create_ui() -> void:
 	var rows := VBoxContainer.new()
 	panel.add_child(rows)
 	var title := Label.new()
-	title.text = "3D Craft  ·  車づくり"
+	title.text = "3D Vehicle Craft"
 	rows.add_child(title)
 	var tools := HBoxContainer.new()
 	rows.add_child(tools)
-	_add_button(tools, "選択", func(): _set_tool("select"))
-	_add_button(tools, "ブロック 1", func(): _set_tool("block"))
-	_add_button(tools, "車輪 2", func(): _set_tool("wheel"))
-	_add_button(tools, "移動", func(): _set_tool("move"))
-	_add_button(tools, "削除", _delete_selected)
+	_add_button(tools, "Select", func(): _set_tool("select"))
+	_add_button(tools, "Block (1)", func(): _set_tool("block"))
+	_add_button(tools, "Wheel (2)", func(): _set_tool("wheel"))
+	_add_button(tools, "Move", func(): _set_tool("move"))
+	_add_button(tools, "Delete", _delete_selected)
 	var actions := HBoxContainer.new()
 	rows.add_child(actions)
-	_add_button(actions, "試走 ↵", _start_trial)
-	_add_button(actions, "編集 Esc", _return_to_edit)
-	_add_button(actions, "保存", _save_vehicle)
-	_add_button(actions, "読込", _load_vehicle)
-	_add_button(actions, "2Dへ", _open_drawing_demo)
+	_add_button(actions, "Run (Enter)", _start_trial)
+	_add_button(actions, "Edit (Esc)", _return_to_edit)
+	_add_button(actions, "Save", _save_vehicle)
+	_add_button(actions, "Load", _load_vehicle)
+	_add_button(actions, "2D Physics", _open_drawing_demo)
 	var driving := HBoxContainer.new()
 	rows.add_child(driving)
-	_add_drive_button(driving, "前進 W", "forward")
-	_add_drive_button(driving, "後退 S", "back")
-	_add_drive_button(driving, "左 A", "left")
-	_add_drive_button(driving, "右 D", "right")
+	_add_drive_button(driving, "Forward (W)", "forward")
+	_add_drive_button(driving, "Reverse (S)", "back")
+	_add_drive_button(driving, "Left (A)", "left")
+	_add_drive_button(driving, "Right (D)", "right")
 	_status = Label.new()
 	_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	rows.add_child(_status)
@@ -199,7 +199,7 @@ func _edit_at(screen_position: Vector2) -> void:
 	if _tool == "select":
 		_selected_id = hit_id
 		_refresh_editor()
-		_update_status("選択中: %s" % _selected_id if not _selected_id.is_empty() else "部品をタップして選択")
+		_update_status("Selected: %s" % _selected_id if not _selected_id.is_empty() else "Tap a part to select it.")
 	elif _tool == "move" and not _selected_id.is_empty() and hit_id.is_empty():
 		_move_selected(hit.position)
 	elif _tool in ["block", "wheel"] and hit_id.is_empty():
@@ -210,7 +210,7 @@ func _place_part(hit_position: Vector3, kind: String) -> void:
 	var cell := Vector3(roundf(hit_position.x / GRID_SIZE), 0.75 if kind == "block" else 0.5, roundf(hit_position.z / GRID_SIZE))
 	for part in _vehicle.parts:
 		if Vector2(part.transform.origin.x, part.transform.origin.z).distance_to(Vector2(cell.x, cell.z)) < 0.1:
-			_update_status("その場所にはすでに部品があります")
+			_update_status("That space is occupied.")
 			return
 	var part_id := _next_part_id(kind)
 	var part = PartData.new(part_id, Transform3D(Basis.IDENTITY, cell), kind)
@@ -223,7 +223,7 @@ func _place_part(hit_position: Vector3, kind: String) -> void:
 			has_blocks = has_blocks or existing.kind == "block"
 		if has_blocks and neighbors.is_empty():
 			_vehicle.remove_part(part_id)
-			_update_status("ブロックは既存ブロックの隣に置いてください")
+			_update_status("Place blocks next to the frame.")
 			return
 		_vehicle.connections.clear()
 		_rebuild_connections()
@@ -231,12 +231,12 @@ func _place_part(hit_position: Vector3, kind: String) -> void:
 		var neighbor = _wheel_mount(part)
 		if neighbor == null:
 			_vehicle.remove_part(part_id)
-			_update_status("車輪はブロックの左右に置いてください")
+			_update_status("Place wheels beside a block.")
 			return
 		_vehicle.add_connection(neighbor.id, part.id, "hinge")
 	_selected_id = part_id
 	_refresh_editor()
-	_update_status("%sを配置しました" % ("ブロック" if kind == "block" else "車輪"))
+	_update_status("Placed %s." % ("block" if kind == "block" else "wheel"))
 
 
 func _move_selected(hit_position: Vector3) -> void:
@@ -247,7 +247,7 @@ func _move_selected(hit_position: Vector3) -> void:
 	var new_origin := Vector3(roundf(hit_position.x / GRID_SIZE), previous.origin.y, roundf(hit_position.z / GRID_SIZE))
 	for other in _vehicle.parts:
 		if other.id != part.id and Vector2(other.transform.origin.x, other.transform.origin.z).distance_to(Vector2(new_origin.x, new_origin.z)) < 0.1:
-			_update_status("その場所にはすでに部品があります")
+			_update_status("That space is occupied.")
 			return
 	part.transform = Transform3D(previous.basis, new_origin)
 	_vehicle.connections.clear()
@@ -270,10 +270,10 @@ func _move_selected(hit_position: Vector3) -> void:
 		part.transform = previous
 		_vehicle.connections.clear()
 		_rebuild_connections()
-		_update_status("ブロックとの接続を保てる場所へ移動してください")
+		_update_status("Move it where all parts stay connected.")
 		return
 	_refresh_editor()
-	_update_status("部品を移動しました")
+	_update_status("Part moved.")
 
 
 func _rebuild_connections() -> void:
@@ -324,19 +324,19 @@ func _delete_selected() -> void:
 		return
 	_selected_id = ""
 	_refresh_editor()
-	_update_status("選択した部品を削除しました")
+	_update_status("Selected part deleted.")
 
 
 func _set_tool(tool: String) -> void:
 	_tool = tool
-	_update_status({"select": "部品をタップして選択", "block": "地面をタップしてブロックを配置", "wheel": "ブロックの左右をタップして車輪を配置", "move": "移動する部品を選び、置き先をタップ"}[tool])
+	_update_status({"select": "Tap a part to select it.", "block": "Tap the ground to place a block.", "wheel": "Tap beside a block to place a wheel.", "move": "Select a part, then tap its destination."}[tool])
 
 
 func _start_trial() -> void:
 	if _running:
 		return
 	if not _vehicle.can_drive():
-		_update_status("試走にはブロック1個以上と、ブロックにつながった車輪2個以上が必要です")
+		_update_status("Trial needs a connected frame and at least two mounted wheels.")
 		return
 	if _preview != null:
 		_preview.queue_free()
@@ -345,7 +345,7 @@ func _start_trial() -> void:
 	add_child(_runtime)
 	_chassis = _runtime.get_node("Chassis")
 	_running = true
-	_update_status("W/Sで前後、A/Dで旋回します。ボタンも使えます。編集で改造に戻れます。")
+	_update_status("Drive with W/S and steer with A/D or the buttons. Edit to rebuild.")
 
 
 func _return_to_edit() -> void:
@@ -357,7 +357,7 @@ func _return_to_edit() -> void:
 	_runtime = null
 	_chassis = null
 	_show_editor()
-	_update_status("編集に戻りました。部品を追加・移動・削除して再試走できます。")
+	_update_status("Back to edit. Add, move or delete parts, then run another trial.")
 
 
 func _refresh_editor() -> void:
@@ -370,33 +370,33 @@ func _refresh_editor() -> void:
 func _save_vehicle() -> bool:
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
-		_update_status("保存できませんでした: %s" % error_string(FileAccess.get_open_error()))
+		_update_status("Save failed: %s" % error_string(FileAccess.get_open_error()))
 		return false
 	file.store_string(_vehicle.to_json())
 	if file.get_error() != OK:
-		_update_status("保存できませんでした")
+		_update_status("Save failed.")
 		return false
-	_update_status("車を保存しました")
+	_update_status("Vehicle saved.")
 	return true
 
 
 func _load_vehicle() -> void:
 	if not FileAccess.file_exists(SAVE_PATH):
-		_update_status("保存データがありません")
+		_update_status("No saved vehicle.")
 		return
 	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
 	if file == null:
-		_update_status("保存データを読めませんでした")
+		_update_status("Could not read saved vehicle.")
 		return
 	var restored = VehicleData.from_json(file.get_as_text())
 	if restored == null:
-		_update_status("保存データが壊れているため、現在の車を維持します")
+		_update_status("Saved vehicle is invalid. Current vehicle kept.")
 		return
 	_vehicle = restored
 	_selected_id = ""
 	if _preview != null:
 		_refresh_editor()
-	_update_status("車を読み込みました")
+	_update_status("Vehicle loaded.")
 
 
 func _open_drawing_demo() -> void:
