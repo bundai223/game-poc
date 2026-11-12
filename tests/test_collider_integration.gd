@@ -219,6 +219,8 @@ func test_delete_mode_hits_transformed_body_and_preserves_other_bodies() -> void
 	await get_tree().physics_frame
 	assert_int(demo._created_bodies.size()).is_equal(1)
 	mode.pressed.emit()
+	assert_str(mode.text).is_equal("Mode: Move")
+	mode.pressed.emit()
 	assert_str(mode.text).is_equal("Mode: Draw")
 
 
@@ -454,3 +456,93 @@ func test_switching_from_cut_to_delete_resumes_body() -> void:
 	assert_bool(body.freeze).is_false()
 	assert_bool(body.linear_velocity.is_equal_approx(Vector2(20, 30))).is_true()
 	assert_bool(demo._drawing).is_false()
+
+
+func test_move_mouse_selects_topmost_and_releases_at_pointer() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var square := PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(200, 200), Vector2(100, 200)])
+	var first: RigidBody2D = demo.spawn_body(OutlineData.new(square))
+	var top: RigidBody2D = demo.spawn_body(OutlineData.new(square))
+	top.rotation = 0.2
+	top.linear_velocity = Vector2(30, 20)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	for i in range(3):
+		mode.pressed.emit()
+	var mouse := InputEventMouseButton.new()
+	mouse.button_index = MOUSE_BUTTON_LEFT
+	mouse.pressed = true
+	mouse.position = Vector2(150, 150)
+	demo._unhandled_input(mouse)
+	assert_bool(top.freeze).is_true()
+	var move := InputEventMouseMotion.new()
+	move.position = Vector2(250, 220)
+	demo._unhandled_input(move)
+	mouse.pressed = false
+	mouse.position = Vector2(270, 230)
+	demo._unhandled_input(mouse)
+	assert_bool(top.position.is_equal_approx(Vector2(270, 230))).is_true()
+	assert_bool(first.position.is_equal_approx(Vector2(150, 150))).is_true()
+	assert_bool(top.freeze).is_false()
+	assert_bool(top.linear_velocity.is_zero_approx()).is_true()
+	assert_float(top.angular_velocity).is_equal(0.0)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_float(top.linear_velocity.y).is_greater(0.0)
+
+
+func test_move_touch_empty_cancel_mode_and_reset() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var body: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(200, 200), Vector2(100, 200)])))
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	for i in range(3):
+		mode.pressed.emit()
+	var touch := InputEventScreenTouch.new()
+	touch.index = 7
+	touch.pressed = true
+	touch.position = Vector2(20, 20)
+	demo._unhandled_input(touch)
+	var drag := InputEventScreenDrag.new()
+	drag.index = 7
+	drag.position = Vector2(150, 150)
+	demo._unhandled_input(drag)
+	assert_bool(body.position.is_equal_approx(Vector2(150, 150))).is_true()
+	touch.pressed = false
+	demo._unhandled_input(touch)
+	touch.pressed = true
+	touch.position = Vector2(150, 150)
+	demo._unhandled_input(touch)
+	assert_bool(body.freeze).is_true()
+	drag.index = 8
+	drag.position = Vector2(300, 300)
+	demo._unhandled_input(drag)
+	assert_bool(body.position.is_equal_approx(Vector2(150, 150))).is_true()
+	drag.index = 7
+	demo._unhandled_input(drag)
+	assert_bool(body.position.is_equal_approx(Vector2(300, 300))).is_true()
+	touch.canceled = true
+	touch.pressed = false
+	demo._unhandled_input(touch)
+	assert_bool(body.freeze).is_false()
+	touch.canceled = false
+	touch.pressed = true
+	touch.position = Vector2(300, 300)
+	demo._unhandled_input(touch)
+	touch.pressed = false
+	touch.position = Vector2(320, 310)
+	demo._unhandled_input(touch)
+	assert_bool(body.position.is_equal_approx(Vector2(320, 310))).is_true()
+	assert_bool(body.freeze).is_false()
+	touch.pressed = true
+	touch.position = Vector2(320, 310)
+	demo._unhandled_input(touch)
+	mode.pressed.emit()
+	assert_bool(body.freeze).is_false()
+	assert_bool(demo._move_active).is_false()
+	for i in range(3):
+		mode.pressed.emit()
+	demo._unhandled_input(touch)
+	demo.reset()
+	assert_bool(demo._move_active).is_false()
+	assert_int(demo._created_bodies.size()).is_equal(0)

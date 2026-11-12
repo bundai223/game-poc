@@ -24,3 +24,4 @@
 
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 切断と削除のモード切替を統合（raw/issues/2026-11-12_38/merge-cut-mode.md）
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 図形と切断片に黒い境界線を追加（raw/issues/2026-11-12_37/shape-border.md）
+- 2026-11-12 [Update] 手描き輪郭の剛体化: 移動モードと検証範囲を記録（raw/issues/2026-11-12_45/drag-mode.md）
