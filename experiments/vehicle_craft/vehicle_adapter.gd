@@ -95,8 +95,8 @@ static func _add_part_visual(parent: Node3D, kind: String, selected: bool = fals
 		visual.material_override = _material(Color(1.0, 0.64, 0.18) if selected else Color(0.2, 0.62, 0.92))
 	else:
 		var tire := CylinderMesh.new()
-		tire.top_radius = 0.45
-		tire.bottom_radius = 0.45
+		tire.top_radius = 0.5
+		tire.bottom_radius = 0.5
 		tire.height = 0.28
 		visual.mesh = tire
 		visual.rotation.z = PI / 2.0
@@ -113,7 +113,7 @@ static func _add_part_collision(parent: Node3D, kind: String) -> void:
 		collision.shape = box
 	else:
 		var tire := CylinderShape3D.new()
-		tire.radius = 0.45
+		tire.radius = 0.5
 		tire.height = 0.28
 		collision.shape = tire
 		collision.rotation.z = PI / 2.0

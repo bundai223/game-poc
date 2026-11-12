@@ -8,9 +8,9 @@ var connections: Array[Dictionary] = []
 
 static func create_starter():
 	var vehicle = new()
-	vehicle.add_part(PartData.new("block-1", Transform3D(Basis.IDENTITY, Vector3(0, 0.5, 0)), "block"))
-	vehicle.add_part(PartData.new("wheel-1", Transform3D(Basis.IDENTITY, Vector3(-1, 0.45, 0)), "wheel"))
-	vehicle.add_part(PartData.new("wheel-2", Transform3D(Basis.IDENTITY, Vector3(1, 0.45, 0)), "wheel"))
+	vehicle.add_part(PartData.new("block-1", Transform3D(Basis.IDENTITY, Vector3(0, 0.75, 0)), "block"))
+	vehicle.add_part(PartData.new("wheel-1", Transform3D(Basis.IDENTITY, Vector3(-1, 0.5, 0)), "wheel"))
+	vehicle.add_part(PartData.new("wheel-2", Transform3D(Basis.IDENTITY, Vector3(1, 0.5, 0)), "wheel"))
 	vehicle.add_connection("block-1", "wheel-1", "hinge")
 	vehicle.add_connection("block-1", "wheel-2", "hinge")
 	return vehicle

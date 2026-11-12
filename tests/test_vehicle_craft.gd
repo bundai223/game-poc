@@ -66,7 +66,7 @@ func test_blocks_and_wheels_can_be_placed_moved_and_deleted() -> void:
 	assert_object(block).is_not_null()
 	demo._selected_id = block.id
 	demo._move_selected(Vector3(0, 0, -1))
-	assert_bool(block.transform.origin.is_equal_approx(Vector3(0, 0.5, -1))).is_true()
+	assert_bool(block.transform.origin.is_equal_approx(Vector3(0, 0.75, -1))).is_true()
 	demo._place_part(Vector3(1, 0, -1), "wheel")
 	var wheel
 	for part in demo._vehicle.parts:

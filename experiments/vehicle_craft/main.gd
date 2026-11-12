@@ -63,6 +63,9 @@ func _physics_process(_delta: float) -> void:
 		var speed := throttle * 10.0 + steering * 5.0 * signf(part.transform.origin.x - center_x)
 		hinge.set_param(HingeJoint3D.PARAM_MOTOR_TARGET_VELOCITY, speed)
 		hinge.set_flag(HingeJoint3D.FLAG_ENABLE_MOTOR, absf(speed) > 0.1)
+	# shortcut: chassis force supplements wheel motors, replace with tire forces if traction fidelity matters.
+	_chassis.apply_central_force(Vector3(0, 0, -throttle * 6.0))
+	_chassis.apply_torque(Vector3.UP * steering)
 	if _chassis != null:
 		var target := _chassis.global_position + Vector3(0, 0.5, 0)
 		$Camera3D.position = target + Vector3(7, 6, 9)
@@ -202,7 +205,7 @@ func _edit_at(screen_position: Vector2) -> void:
 
 
 func _place_part(hit_position: Vector3, kind: String) -> void:
-	var cell := Vector3(roundf(hit_position.x / GRID_SIZE), 0.5 if kind == "block" else 0.45, roundf(hit_position.z / GRID_SIZE))
+	var cell := Vector3(roundf(hit_position.x / GRID_SIZE), 0.75 if kind == "block" else 0.5, roundf(hit_position.z / GRID_SIZE))
 	for part in _vehicle.parts:
 		if Vector2(part.transform.origin.x, part.transform.origin.z).distance_to(Vector2(cell.x, cell.z)) < 0.1:
 			_update_status("その場所にはすでに部品があります")
