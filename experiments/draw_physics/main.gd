@@ -3,10 +3,10 @@ extends Node2D
 const Outline = preload("res://experiments/draw_physics/outline.gd")
 const OutlineData = preload("res://experiments/draw_physics/outline_data.gd")
 const RigidBodyAdapter = preload("res://experiments/draw_physics/rigid_body_adapter.gd")
-const FLOOR_Y := 560.0
 const FLOOR_WIDTH := 10000.0
 const FLOOR_HEIGHT := 32.0
 
+var _floor_y := 0.0
 var _drawing := false
 var _touch_index := -1
 var _outline := PackedVector2Array()
@@ -14,8 +14,9 @@ var _created_bodies: Array[RigidBody2D] = []
 
 
 func _ready() -> void:
+	_floor_y = get_viewport_rect().size.y - FLOOR_HEIGHT
 	var floor := StaticBody2D.new()
-	floor.position = Vector2(400.0, FLOOR_Y + FLOOR_HEIGHT / 2.0)
+	floor.position = Vector2(400.0, _floor_y + FLOOR_HEIGHT / 2.0)
 	var collider := CollisionShape2D.new()
 	var shape := RectangleShape2D.new()
 	shape.size = Vector2(FLOOR_WIDTH, FLOOR_HEIGHT)
@@ -116,7 +117,7 @@ func _finish_draw(point: Vector2) -> void:
 
 
 func _draw() -> void:
-	draw_line(Vector2(400.0 - FLOOR_WIDTH / 2.0, FLOOR_Y), Vector2(400.0 + FLOOR_WIDTH / 2.0, FLOOR_Y), Color(0.85, 0.9, 0.95), 4.0)
+	draw_line(Vector2(400.0 - FLOOR_WIDTH / 2.0, _floor_y), Vector2(400.0 + FLOOR_WIDTH / 2.0, _floor_y), Color(0.85, 0.9, 0.95), 4.0)
 	if _outline.size() > 1:
 		var preview := _outline.duplicate()
 		if _drawing:
