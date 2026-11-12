@@ -86,6 +86,7 @@ test('Web 版で削除モードから図形を個別に削除できる', async (
   await page.waitForTimeout(200);
   const empty = await canvas.screenshot();
   await page.mouse.click(box.x + box.width - 120, box.y + 250);
+  await page.mouse.click(box.x + box.width - 120, box.y + 250);
   await page.mouse.move(box.x + 100, box.y + 400);
   await page.mouse.down();
   await page.mouse.move(box.x + 250, box.y + 400);

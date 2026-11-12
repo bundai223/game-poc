@@ -219,6 +219,8 @@ func test_delete_mode_hits_transformed_body_and_preserves_other_bodies() -> void
 	await get_tree().physics_frame
 	assert_int(demo._created_bodies.size()).is_equal(1)
 	mode.pressed.emit()
+	assert_str(mode.text).is_equal("Mode: Connect")
+	mode.pressed.emit()
 	assert_str(mode.text).is_equal("Mode: Draw")
 
 
@@ -454,3 +456,102 @@ func test_switching_from_cut_to_delete_resumes_body() -> void:
 	assert_bool(body.freeze).is_false()
 	assert_bool(body.linear_velocity.is_equal_approx(Vector2(20, 30))).is_true()
 	assert_bool(demo._drawing).is_false()
+
+
+func test_connect_mouse_touch_and_cleanup() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var square := PackedVector2Array([Vector2(0, 0), Vector2(80, 0), Vector2(80, 80), Vector2(0, 80)])
+	var bodies: Array[RigidBody2D] = []
+	for x in [0, 150, 300]:
+		var body: RigidBody2D = demo.spawn_body(OutlineData.new(square))
+		body.position += Vector2(x, 100)
+		bodies.append(body)
+	await get_tree().physics_frame
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	for i in 3:
+		mode.pressed.emit()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = bodies[0].global_position
+	demo._unhandled_input(click)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var touch := InputEventScreenTouch.new()
+	touch.index = 7
+	touch.pressed = true
+	touch.position = bodies[1].global_position
+	demo._unhandled_input(touch)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	demo._select_connection_body(bodies[1])
+	demo._select_connection_body(bodies[2])
+	assert_int(demo._connections.size()).is_equal(2)
+	demo._select_connection_body(bodies[0])
+	demo._select_connection_body(bodies[1])
+	demo._select_connection_body(bodies[2])
+	demo._select_connection_body(bodies[2])
+	assert_int(demo._connections.size()).is_equal(2)
+	var initial_distance := bodies[0].position.distance_to(bodies[1].position)
+	for i in 30:
+		await get_tree().physics_frame
+	assert_float(absf(bodies[0].position.distance_to(bodies[1].position) - initial_distance)).is_less(15.0)
+	mode.pressed.emit()
+	mode.pressed.emit()
+	mode.pressed.emit()
+	click.position = bodies[1].global_position
+	demo._unhandled_input(click)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_int(demo._connections.size()).is_zero()
+	assert_int(demo._created_bodies.size()).is_equal(2)
+	demo._select_connection_body(bodies[0])
+	demo._select_connection_body(bodies[2])
+	demo.reset()
+	assert_int(demo._connections.size()).is_zero()
+
+
+func test_cut_removes_connections_and_mode_change_cancels_selection() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var first: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(300, 100), Vector2(300, 300), Vector2(100, 300)])))
+	var second: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(400, 100), Vector2(500, 100), Vector2(500, 200), Vector2(400, 200)])))
+	demo._select_connection_body(first)
+	demo._select_connection_body(second)
+	demo._select_connection_body(second)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	mode.pressed.emit()
+	assert_object(demo._selected_body).is_null()
+	demo._begin_draw(Vector2(50, 200))
+	demo._finish_draw(Vector2(350, 200))
+	assert_int(demo._connections.size()).is_zero()
+	assert_int(demo._created_bodies.size()).is_equal(3)
+
+
+func test_connect_empty_cancel_and_focus_loss_clear_selection() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var body: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(200, 200), Vector2(100, 200)])))
+	body.freeze = true
+	await get_tree().physics_frame
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	for i in 3:
+		mode.pressed.emit()
+	demo._select_connection_body(body)
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = Vector2(20, 100)
+	demo._unhandled_input(click)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_object(demo._selected_body).is_null()
+	demo._select_connection_body(body)
+	var touch := InputEventScreenTouch.new()
+	touch.canceled = true
+	demo._unhandled_input(touch)
+	assert_object(demo._selected_body).is_null()
+	demo._select_connection_body(body)
+	demo._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_object(demo._selected_body).is_null()
