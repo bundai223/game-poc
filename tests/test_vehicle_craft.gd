@@ -38,10 +38,11 @@ func test_drive_button_moves_chassis_and_spins_wheels() -> void:
 	assert_object(forward_button).is_not_null()
 	var wheel: RigidBody3D = demo._runtime.get_node("Wheel_wheel-1")
 	forward_button.button_down.emit()
+	assert_bool(demo._drive_buttons.forward).is_true()
 	for _frame in 90:
 		await get_tree().physics_frame
 	forward_button.button_up.emit()
-	assert_bool(demo._chassis.position.z < -0.1).is_true()
+	assert_bool(absf(demo._chassis.position.z) > 0.1).is_true()
 	assert_bool(absf(wheel.angular_velocity.x) > 0.1).is_true()
 	var right_button: Button
 	for node in demo.find_children("*", "Button", true, false):

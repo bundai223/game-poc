@@ -64,6 +64,8 @@ func _physics_process(_delta: float) -> void:
 		hinge.set_param(HingeJoint3D.PARAM_MOTOR_TARGET_VELOCITY, speed)
 		hinge.set_flag(HingeJoint3D.FLAG_ENABLE_MOTOR, absf(speed) > 0.1)
 	# shortcut: chassis force supplements wheel motors, replace with tire forces if traction fidelity matters.
+	if throttle != 0.0 or steering != 0.0:
+		_chassis.sleeping = false
 	_chassis.apply_central_force(Vector3(0, 0, -throttle * 6.0))
 	_chassis.apply_torque(Vector3.UP * steering)
 	if _chassis != null:
