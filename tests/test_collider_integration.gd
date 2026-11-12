@@ -181,6 +181,81 @@ func test_touch_drag_with_nonzero_index_creates_body() -> void:
 	assert_int(demo._created_bodies.size()).is_equal(1)
 
 
+func test_delete_mode_hits_transformed_body_and_preserves_other_bodies() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	demo.position = Vector2(40, 30)
+	var points := PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)])
+	var target: RigidBody2D = demo.spawn_body(OutlineData.new(points))
+	target.freeze = true
+	target.rotation = PI / 4
+	var other: RigidBody2D = demo.spawn_body(OutlineData.new(points))
+	other.position += Vector2(300, 0)
+	other.freeze = true
+	await get_tree().physics_frame
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	mode.pressed.emit()
+	mode.pressed.emit()
+	assert_str(mode.text).is_equal("Mode: Delete")
+	var touch := InputEventScreenTouch.new()
+	touch.index = 7
+	touch.pressed = true
+	touch.position = demo.get_canvas_transform() * target.global_position
+	demo._unhandled_input(touch)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_int(demo._created_bodies.size()).is_equal(1)
+	assert_bool(demo._created_bodies[0] == other).is_true()
+	touch.position = Vector2(10, 10)
+	demo._unhandled_input(touch)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_int(demo._created_bodies.size()).is_equal(1)
+	mode.pressed.emit()
+	assert_str(mode.text).is_equal("Mode: Draw")
+
+
+func test_delete_mode_cancels_in_progress_drawing() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(100, 100)
+	demo._unhandled_input(press)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	mode.pressed.emit()
+	mode.pressed.emit()
+	assert_bool(demo._drawing).is_false()
+	assert_int(demo._outline.size()).is_zero()
+
+
+func test_mouse_click_in_delete_mode_and_reset_pending_input() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var points := PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)])
+	var body: RigidBody2D = demo.spawn_body(OutlineData.new(points))
+	body.freeze = true
+	await get_tree().physics_frame
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	mode.pressed.emit()
+	mode.pressed.emit()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	click.position = body.global_position
+	demo._unhandled_input(click)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_int(demo._created_bodies.size()).is_zero()
+	body = demo.spawn_body(OutlineData.new(points))
+	body.freeze = true
+	demo._unhandled_input(click)
+	mode.pressed.emit()
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_int(demo._created_bodies.size()).is_equal(1)
+
 func test_cut_mode_freezes_splits_and_resumes_bodies() -> void:
 	var demo := DrawPhysics.instantiate()
 	add_child(demo)
@@ -351,3 +426,21 @@ func test_paused_corner_is_not_added_twice_when_direction_changes() -> void:
 	assert_int(demo._outline.size()).is_equal(2)
 	assert_bool(demo._outline[1].is_equal_approx(Vector2(150, 100))).is_true()
 	button.pressed.emit()
+
+func test_switching_from_cut_to_delete_resumes_body() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var body: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(300, 100), Vector2(100, 300)])))
+	body.linear_velocity = Vector2(20, 30)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	mode.pressed.emit()
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	touch.position = Vector2(50, 150)
+	demo._unhandled_input(touch)
+	assert_bool(body.freeze).is_true()
+	mode.pressed.emit()
+	assert_str(mode.text).is_equal("Mode: Delete")
+	assert_bool(body.freeze).is_false()
+	assert_bool(body.linear_velocity.is_equal_approx(Vector2(20, 30))).is_true()
+	assert_bool(demo._drawing).is_false()
