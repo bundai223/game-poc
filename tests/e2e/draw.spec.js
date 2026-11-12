@@ -72,3 +72,29 @@ test('Web 版から3D Craftへ移動して2Dへ戻れる', async ({ page }) => {
   await page.mouse.click(box.x + 432, box.y + 116);
   await expect.poll(async () => (await canvas.screenshot()).equals(drawing)).toBe(true);
 });
+
+test('Web 版で削除モードから図形を個別に削除できる', async ({ page }) => {
+  await page.goto('/');
+  const canvas = page.locator('canvas');
+  await expect(canvas).toBeVisible();
+  await expect(page.locator('#status')).toBeHidden({ timeout: 30000 });
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.click(box.x + box.width - 120, box.y + 250);
+  await page.mouse.move(box.x + 50, box.y + 50);
+  await page.waitForTimeout(200);
+  const empty = await canvas.screenshot();
+  await page.mouse.click(box.x + box.width - 120, box.y + 250);
+  await page.mouse.move(box.x + 100, box.y + 400);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 250, box.y + 400);
+  await page.mouse.move(box.x + 250, box.y + 500);
+  await page.mouse.move(box.x + 100, box.y + 500);
+  await page.mouse.up();
+  await page.waitForTimeout(1500);
+  await page.mouse.click(box.x + box.width - 120, box.y + 250);
+  await expect.poll(async () => (await canvas.screenshot()).equals(empty)).toBe(false);
+  await page.mouse.click(box.x + 175, box.y + 560);
+  await page.mouse.move(box.x + 50, box.y + 50);
+  await expect.poll(async () => (await canvas.screenshot()).equals(empty)).toBe(true);
+});
