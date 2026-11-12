@@ -47,3 +47,24 @@ func test_cut_drag_pauses_and_cancel_resumes_falling() -> void:
 	for _frame in 10:
 		await get_tree().physics_frame
 	assert_bool(body.position.y > paused_position.y).is_true()
+
+
+func test_draw_pauses_and_release_resumes_falling() -> void:
+	var demo := DrawPhysics.instantiate()
+	auto_free(demo)
+	add_child(demo)
+	var body: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)])))
+	var mouse := InputEventMouseButton.new()
+	mouse.button_index = MOUSE_BUTTON_LEFT
+	mouse.pressed = true
+	mouse.position = Vector2(300, 100)
+	demo._unhandled_input(mouse)
+	var paused_position := body.position
+	for _frame in 10:
+		await get_tree().physics_frame
+	assert_bool(body.position.is_equal_approx(paused_position)).is_true()
+	mouse.pressed = false
+	demo._unhandled_input(mouse)
+	for _frame in 10:
+		await get_tree().physics_frame
+	assert_bool(body.position.y > paused_position.y).is_true()

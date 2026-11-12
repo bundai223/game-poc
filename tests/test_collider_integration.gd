@@ -712,3 +712,63 @@ func test_move_does_not_move_connected_bodies() -> void:
 	demo._unhandled_input(drag)
 	assert_bool(second.position.is_equal_approx(Vector2(350, 150))).is_true()
 	assert_int(demo._connections.size()).is_equal(1)
+
+
+func test_draw_freezes_and_restores_existing_motion_on_finish_or_cancel() -> void:
+	var demo := DrawPhysics.instantiate()
+	auto_free(demo)
+	add_child(demo)
+	var points := PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(150, 200)])
+	var body: RigidBody2D = demo.spawn_body(OutlineData.new(points))
+	body.linear_velocity = Vector2(25, -10)
+	body.angular_velocity = 2.0
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(300, 100)
+	demo._unhandled_input(press)
+	assert_bool(body.freeze).is_true()
+	press.pressed = false
+	demo._unhandled_input(press)
+	assert_bool(body.freeze).is_false()
+	assert_bool(body.linear_velocity.is_equal_approx(Vector2(25, -10))).is_true()
+	assert_float(body.angular_velocity).is_equal(2.0)
+	var touch := InputEventScreenTouch.new()
+	touch.index = 7
+	touch.pressed = true
+	touch.position = Vector2(300, 100)
+	demo._unhandled_input(touch)
+	assert_bool(body.freeze).is_true()
+	touch.pressed = false
+	touch.canceled = true
+	demo._unhandled_input(touch)
+	assert_bool(body.freeze).is_false()
+	assert_bool(body.linear_velocity.is_equal_approx(Vector2(25, -10))).is_true()
+	touch.canceled = false
+	touch.pressed = true
+	demo._unhandled_input(touch)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	mode.pressed.emit()
+	assert_bool(body.freeze).is_false()
+	assert_bool(body.linear_velocity.is_equal_approx(Vector2(25, -10))).is_true()
+	for _step in range(4):
+		mode.pressed.emit()
+	press.pressed = true
+	press.position = Vector2(300, 100)
+	demo._unhandled_input(press)
+	var motion := InputEventMouseMotion.new()
+	motion.position = Vector2(400, 100)
+	demo._unhandled_input(motion)
+	motion.position = Vector2(350, 200)
+	demo._unhandled_input(motion)
+	press.pressed = false
+	press.position = motion.position
+	demo._unhandled_input(press)
+	assert_int(demo._created_bodies.size()).is_equal(2)
+	assert_bool(body.freeze).is_false()
+	assert_bool(body.linear_velocity.is_equal_approx(Vector2(25, -10))).is_true()
+	press.pressed = true
+	demo._unhandled_input(press)
+	demo.reset()
+	assert_bool(demo._frozen_bodies.is_empty()).is_true()
+	assert_int(demo._created_bodies.size()).is_zero()
