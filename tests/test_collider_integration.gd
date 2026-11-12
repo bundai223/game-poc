@@ -27,6 +27,10 @@ func test_drag_creates_matching_polygon_and_collision_nodes() -> void:
 	var visual: Polygon2D = body.get_child(0)
 	var collider: CollisionPolygon2D = body.get_child(1)
 	assert_bool(visual.polygon == collider.polygon).is_true()
+	var border: Line2D = visual.get_child(0)
+	assert_bool(border.closed).is_true()
+	assert_bool(border.points == visual.polygon).is_true()
+	assert_bool(border.default_color == Color.BLACK).is_true()
 	assert_bool(body.position.distance_to(Vector2(150, 133.3333)) < 0.01).is_true()
 
 
@@ -49,6 +53,9 @@ func test_concave_stroke_creates_a_body() -> void:
 	demo._unhandled_input(release)
 
 	assert_int(demo._created_bodies.size()).is_equal(1)
+	var visual: Polygon2D = demo._created_bodies[0].get_child(0)
+	var border: Line2D = visual.get_child(0)
+	assert_bool(border.closed and border.points == visual.polygon).is_true()
 
 
 func test_single_touch_creates_one_body_and_reset_removes_it() -> void:
@@ -278,6 +285,9 @@ func test_cut_mode_freezes_splits_and_resumes_bodies() -> void:
 	demo._unhandled_input(touch)
 	assert_int(demo._created_bodies.size()).is_equal(2)
 	for piece in demo._created_bodies:
+		var visual: Polygon2D = piece.get_child(0)
+		var border: Line2D = visual.get_child(0)
+		assert_bool(border.closed and border.points == visual.polygon).is_true()
 		assert_bool(piece.freeze).is_false()
 		assert_bool(piece.linear_velocity.is_equal_approx(Vector2(30, 10))).is_true()
 
