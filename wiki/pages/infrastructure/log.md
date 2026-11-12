@@ -14,3 +14,8 @@
 - 2026-11-07 [Update] Godot 開発環境: GitHub Actions 上の Dagger 正常系を確認（raw/issues/2026-11-07_24/github-dagger.md）
 - 2026-11-07 [Update] Godot 開発環境: GitHub Actions 上の E2E 失敗検出を確認（raw/issues/2026-11-07_24/github-dagger-failure.md）
 - 2026-11-09 [Update] Godot 開発環境: Issue #24 完了とローカル Podman 検証保留・試験用マシン削除を記録（raw/issues/2026-11-09_24/closure.md）
+- 2026-11-13 [Update] Issue単位の開発運用: 計画・実装・レビューの区切りを記録（raw/conversations/2026-11-13_開発フェーズとスキル.md）
+- 2026-11-13 [Update] Issue単位の開発運用: GitHub tracker と raw/wiki の記録先を整理（raw/conversations/2026-11-13_開発スキルと記録先.md）
+- 2026-11-13 [Update] Issue単位の開発運用: 運用ルールを Issue #51 と紐付け（raw/issues/2026-11-13_51/issue-created.md）
+- 2026-11-13 [Update] Issue単位の開発運用: Issue 内容の確認を実装開始条件に追加（raw/issues/2026-11-13_51/scope-update.md）
+- 2026-11-13 [Update] Issue単位の開発運用: 節目・発見・push 前の Wiki 更新を明記（raw/issues/2026-11-13_51/update-wiki-trigger.md）
