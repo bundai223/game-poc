@@ -267,3 +267,87 @@ func test_pause_during_cut_creates_a_bend() -> void:
 	assert_int(demo._outline.size()).is_equal(2)
 	assert_bool(demo._outline[1].is_equal_approx(Vector2(100, 100))).is_true()
 	button.pressed.emit()
+
+
+func test_direction_change_adds_corner_and_cuts_on_mouse_release() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(300, 100), Vector2(300, 300), Vector2(100, 300)])))
+	var button := demo.find_child("ModeButton", true, false) as Button
+	button.pressed.emit()
+	var mouse := InputEventMouseButton.new()
+	mouse.button_index = MOUSE_BUTTON_LEFT
+	mouse.position = Vector2(50, 200)
+	mouse.pressed = true
+	demo._unhandled_input(mouse)
+	var move := InputEventMouseMotion.new()
+	for point in [Vector2(100, 200), Vector2(150, 200), Vector2(200, 200), Vector2(200, 250), Vector2(200, 350)]:
+		move.position = point
+		demo._unhandled_input(move)
+	assert_int(demo._outline.size()).is_equal(2)
+	assert_bool(demo._outline[1].is_equal_approx(Vector2(200, 200))).is_true()
+	mouse.position = Vector2(200, 350)
+	mouse.pressed = false
+	demo._unhandled_input(mouse)
+	assert_int(demo._created_bodies.size()).is_equal(2)
+
+
+func test_touch_small_jitter_does_not_create_corners() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var button := demo.find_child("ModeButton", true, false) as Button
+	button.pressed.emit()
+	var touch := InputEventScreenTouch.new()
+	touch.index = 3
+	touch.position = Vector2(30, 100)
+	touch.pressed = true
+	demo._unhandled_input(touch)
+	var drag := InputEventScreenDrag.new()
+	drag.index = 3
+	for point in [Vector2(50, 100), Vector2(60, 102), Vector2(70, 99), Vector2(80, 101), Vector2(100, 100)]:
+		drag.position = point
+		demo._unhandled_input(drag)
+	assert_int(demo._outline.size()).is_equal(1)
+	touch.canceled = true
+	touch.pressed = false
+	demo._unhandled_input(touch)
+	assert_bool(demo._drawing).is_false()
+
+
+func test_touch_direction_change_creates_corner_and_cuts() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(300, 100), Vector2(300, 300), Vector2(100, 300)])))
+	var button := demo.find_child("ModeButton", true, false) as Button
+	button.pressed.emit()
+	var touch := InputEventScreenTouch.new()
+	touch.index = 7
+	touch.position = Vector2(50, 200)
+	touch.pressed = true
+	demo._unhandled_input(touch)
+	var drag := InputEventScreenDrag.new()
+	drag.index = 7
+	for point in [Vector2(120, 200), Vector2(200, 200), Vector2(200, 250), Vector2(200, 350)]:
+		drag.position = point
+		demo._unhandled_input(drag)
+	assert_int(demo._outline.size()).is_equal(2)
+	assert_bool(demo._outline[1].is_equal_approx(Vector2(200, 200))).is_true()
+	touch.position = Vector2(200, 350)
+	touch.pressed = false
+	demo._unhandled_input(touch)
+	assert_int(demo._created_bodies.size()).is_equal(2)
+
+
+func test_paused_corner_is_not_added_twice_when_direction_changes() -> void:
+	var demo := DrawPhysics.instantiate()
+	add_child(demo)
+	var button := demo.find_child("ModeButton", true, false) as Button
+	button.pressed.emit()
+	demo._begin_draw(Vector2(50, 100))
+	demo._add_point(Vector2(150, 100))
+	demo._last_motion_ms = Time.get_ticks_msec() - 200
+	demo._process(0.0)
+	demo._add_point(Vector2(150, 130))
+	assert_int(demo._outline.size()).is_equal(2)
+	assert_bool(demo._outline[1].is_equal_approx(Vector2(150, 100))).is_true()
+	button.pressed.emit()
