@@ -24,6 +24,10 @@ var _move_body: RigidBody2D
 var _move_offset := Vector2.ZERO
 var _move_was_frozen := false
 var _move_active := false
+var _connect_mode := false
+var _selected_body: RigidBody2D
+var _connections: Array[PinJoint2D] = []
+var _connection_overlay: Node2D
 var _delete_points: Array[Vector2] = []
 var _touch_index := -1
 var _outline := PackedVector2Array()
@@ -40,10 +44,14 @@ func _ready() -> void:
 	collider.shape = shape
 	floor.add_child(collider)
 	add_child(floor)
+	_connection_overlay = Node2D.new()
+	_connection_overlay.z_index = 10
+	_connection_overlay.draw.connect(_draw_connections)
+	add_child(_connection_overlay)
 
 	var instructions := Label.new()
 	instructions.position = Vector2(24.0, 20.0)
-	instructions.text = "Draw shapes. Use Mode to Cut, Delete or Move."
+	instructions.text = "Draw shapes. Use Mode to Cut, Delete, Connect or Move."
 	add_child(instructions)
 	var controls := CanvasLayer.new()
 	add_child(controls)
@@ -78,12 +86,18 @@ func _ready() -> void:
 	mode_button.pressed.connect(func() -> void:
 		_cancel_draw()
 		_delete_points.clear()
+		_selected_body = null
+		queue_redraw()
 		if _cut_mode:
 			_cut_mode = false
 			_delete_mode = true
 			mode_button.text = "Mode: Delete"
 		elif _delete_mode:
 			_delete_mode = false
+			_connect_mode = true
+			mode_button.text = "Mode: Connect"
+		elif _connect_mode:
+			_connect_mode = false
 			_move_mode = true
 			mode_button.text = "Mode: Move"
 		elif _move_mode:
@@ -102,16 +116,27 @@ func _physics_process(_delta: float) -> void:
 		var query := PhysicsPointQueryParameters2D.new()
 		query.position = get_canvas_transform().affine_inverse() * point
 		var hits := get_world_2d().direct_space_state.intersect_point(query)
+		var found := false
 		for hit in hits:
 			var body: Object = hit.collider
 			if body in _created_bodies:
-				_created_bodies.erase(body)
-				body.queue_free()
+				found = true
+				if _connect_mode:
+					_select_connection_body(body)
+				else:
+					_remove_connections(body)
+					_created_bodies.erase(body)
+					body.queue_free()
 				break
+		if _connect_mode and not found:
+			_selected_body = null
 	_delete_points.clear()
+	if _connect_mode:
+		queue_redraw()
 
 
 func _process(_delta: float) -> void:
+	_connection_overlay.queue_redraw()
 	if _drawing and _cut_mode and Time.get_ticks_msec() - _last_motion_ms >= CUT_PAUSE_MS:
 		if _outline[-1].distance_to(_cut_cursor) >= 3.0:
 			_outline.append(_cut_cursor)
@@ -124,8 +149,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		reset()
 	elif _move_mode:
 		_move_input(event)
-	elif _delete_mode:
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	elif _delete_mode or _connect_mode:
+		if event is InputEventScreenTouch and event.canceled:
+			_selected_body = null
+			_delete_points.clear()
+			queue_redraw()
+		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			_delete_points.append(event.position)
 		elif event is InputEventScreenTouch and event.pressed and not event.canceled:
 			_delete_points.append(event.position)
@@ -177,6 +206,9 @@ func _begin_move(point: Vector2) -> void:
 		var body := _created_bodies[index]
 		var visual: Polygon2D = body.get_child(0)
 		if Geometry2D.is_point_in_polygon(body.to_local(to_global(point)), visual.polygon):
+			for joint in _connections:
+				if joint.get_node(joint.node_a) == body or joint.get_node(joint.node_b) == body:
+					return
 			_move_body = body
 			_move_offset = body.position - point
 			_move_was_frozen = body.freeze
@@ -194,11 +226,18 @@ func _move_to(point: Vector2) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_cancel_draw()
+		_selected_body = null
+		_delete_points.clear()
+		queue_redraw()
 
 
 func reset() -> void:
 	_cancel_draw()
 	_delete_points.clear()
+	_selected_body = null
+	for joint in _connections:
+		joint.queue_free()
+	_connections.clear()
 	for body in _created_bodies:
 		body.queue_free()
 	_created_bodies.clear()
@@ -307,6 +346,7 @@ func _cut_bodies() -> void:
 			continue
 		var state: Array = _frozen_bodies[body]
 		var center := to_local(body.to_global(body.center_of_mass))
+		_remove_connections(body)
 		_created_bodies.erase(body)
 		_frozen_bodies.erase(body)
 		body.queue_free()
@@ -320,6 +360,15 @@ func _cut_bodies() -> void:
 			part.angular_velocity = state[2]
 
 
+func _draw_connections() -> void:
+	for joint in _connections:
+		var first := joint.get_node(joint.node_a) as RigidBody2D
+		var second := joint.get_node(joint.node_b) as RigidBody2D
+		_connection_overlay.draw_line(first.position, second.position, Color(0.3, 0.9, 1.0), 4.0)
+	if _selected_body != null:
+		_connection_overlay.draw_circle(_selected_body.position, 8.0, Color(1.0, 0.8, 0.25))
+
+
 func _draw() -> void:
 	draw_line(Vector2(400.0 - FLOOR_WIDTH / 2.0, _floor_y), Vector2(400.0 + FLOOR_WIDTH / 2.0, _floor_y), Color(0.85, 0.9, 0.95), 4.0)
 	if _outline.size() > 1 or (_cut_mode and _drawing and _outline.size() == 1):
@@ -327,3 +376,32 @@ func _draw() -> void:
 		if _drawing:
 			preview.append(_cut_cursor if _cut_mode else _outline[0])
 		draw_polyline(preview, Color(1.0, 0.8, 0.25), 3.0, true)
+
+
+func _select_connection_body(body: RigidBody2D) -> void:
+	if _selected_body == null:
+		_selected_body = body
+	elif _selected_body == body:
+		_selected_body = null
+	else:
+		for joint in _connections:
+			if (joint.get_node(joint.node_a) == _selected_body and joint.get_node(joint.node_b) == body) or (joint.get_node(joint.node_b) == _selected_body and joint.get_node(joint.node_a) == body):
+				_selected_body = null
+				return
+		var joint := PinJoint2D.new()
+		joint.position = (_selected_body.position + body.position) / 2.0
+		add_child(joint)
+		joint.node_a = joint.get_path_to(_selected_body)
+		joint.node_b = joint.get_path_to(body)
+		_connections.append(joint)
+		_selected_body = null
+
+
+func _remove_connections(body: RigidBody2D) -> void:
+	if _selected_body == body:
+		_selected_body = null
+	for joint in _connections.duplicate():
+		if joint.get_node(joint.node_a) == body or joint.get_node(joint.node_b) == body:
+			_connections.erase(joint)
+			joint.queue_free()
+	queue_redraw()
