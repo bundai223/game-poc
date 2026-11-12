@@ -19,6 +19,11 @@ var _frozen_bodies := {}
 var _floor_y := 0.0
 var _drawing := false
 var _delete_mode := false
+var _move_mode := false
+var _move_body: RigidBody2D
+var _move_offset := Vector2.ZERO
+var _move_was_frozen := false
+var _move_active := false
 var _connect_mode := false
 var _selected_body: RigidBody2D
 var _connections: Array[PinJoint2D] = []
@@ -46,7 +51,7 @@ func _ready() -> void:
 
 	var instructions := Label.new()
 	instructions.position = Vector2(24.0, 20.0)
-	instructions.text = "Draw shapes. Use Mode to Cut, Delete or Connect."
+	instructions.text = "Draw shapes. Use Mode to Cut, Delete, Connect or Move."
 	add_child(instructions)
 	var controls := CanvasLayer.new()
 	add_child(controls)
@@ -93,6 +98,10 @@ func _ready() -> void:
 			mode_button.text = "Mode: Connect"
 		elif _connect_mode:
 			_connect_mode = false
+			_move_mode = true
+			mode_button.text = "Mode: Move"
+		elif _move_mode:
+			_move_mode = false
 			mode_button.text = "Mode: Draw"
 		else:
 			_cut_mode = true
@@ -138,6 +147,8 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		reset()
+	elif _move_mode:
+		_move_input(event)
 	elif _delete_mode or _connect_mode:
 		if event is InputEventScreenTouch and event.canceled:
 			_selected_body = null
@@ -165,6 +176,51 @@ func _unhandled_input(event: InputEvent) -> void:
 			_touch_index = -1
 	elif event is InputEventScreenDrag and event.index == _touch_index and _drawing:
 		_add_point(to_local(event.position))
+
+
+func _move_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and not _move_active:
+			_begin_move(to_local(event.position))
+		elif not event.pressed and _move_active and _touch_index == -1:
+			_move_to(to_local(event.position))
+			_cancel_draw()
+	elif event is InputEventMouseMotion and _move_active and _touch_index == -1:
+		_move_to(to_local(event.position))
+	elif event is InputEventScreenTouch:
+		if event.pressed and not event.canceled and not _move_active:
+			_touch_index = event.index
+			_begin_move(to_local(event.position))
+		elif event.index == _touch_index and _move_active:
+			if not event.canceled and not event.pressed:
+				_move_to(to_local(event.position))
+			if event.canceled or not event.pressed:
+				_cancel_draw()
+	elif event is InputEventScreenDrag and _move_active and event.index == _touch_index:
+		_move_to(to_local(event.position))
+
+
+func _begin_move(point: Vector2) -> void:
+	_move_active = true
+	for index in range(_created_bodies.size() - 1, -1, -1):
+		var body := _created_bodies[index]
+		var visual: Polygon2D = body.get_child(0)
+		if Geometry2D.is_point_in_polygon(body.to_local(to_global(point)), visual.polygon):
+			for joint in _connections:
+				if joint.get_node(joint.node_a) == body or joint.get_node(joint.node_b) == body:
+					return
+			_move_body = body
+			_move_offset = body.position - point
+			_move_was_frozen = body.freeze
+			body.freeze = true
+			body.linear_velocity = Vector2.ZERO
+			body.angular_velocity = 0.0
+			break
+
+
+func _move_to(point: Vector2) -> void:
+	if is_instance_valid(_move_body):
+		_move_body.position = point + _move_offset
 
 
 func _notification(what: int) -> void:
@@ -261,6 +317,11 @@ func _finish_draw(point: Vector2) -> void:
 
 
 func _cancel_draw() -> void:
+	if is_instance_valid(_move_body):
+		_move_body.freeze = _move_was_frozen
+		_move_body.sleeping = false
+	_move_body = null
+	_move_active = false
 	_drawing = false
 	_touch_index = -1
 	_outline.clear()
