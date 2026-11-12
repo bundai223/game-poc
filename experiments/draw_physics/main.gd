@@ -15,6 +15,8 @@ const CUT_PAUSE_MS := 150
 var _frozen_bodies := {}
 var _floor_y := 0.0
 var _drawing := false
+var _delete_mode := false
+var _delete_points: Array[Vector2] = []
 var _touch_index := -1
 var _outline := PackedVector2Array()
 var _created_bodies: Array[RigidBody2D] = []
@@ -33,7 +35,7 @@ func _ready() -> void:
 
 	var instructions := Label.new()
 	instructions.position = Vector2(24.0, 20.0)
-	instructions.text = "Draw shapes, then switch to Cut and drag a line."
+	instructions.text = "Draw shapes. Use Mode to Cut or Delete."
 	add_child(instructions)
 	var controls := CanvasLayer.new()
 	add_child(controls)
@@ -65,13 +67,36 @@ func _ready() -> void:
 	mode_button.offset_top = 208.0
 	mode_button.offset_right = -24.0
 	mode_button.offset_bottom = 296.0
-	mode_button.pressed.connect(func():
+	mode_button.pressed.connect(func() -> void:
 		_cancel_draw()
-		_cut_mode = not _cut_mode
-		mode_button.text = "Mode: Cut" if _cut_mode else "Mode: Draw"
+		_delete_points.clear()
+		if _cut_mode:
+			_cut_mode = false
+			_delete_mode = true
+			mode_button.text = "Mode: Delete"
+		elif _delete_mode:
+			_delete_mode = false
+			mode_button.text = "Mode: Draw"
+		else:
+			_cut_mode = true
+			mode_button.text = "Mode: Cut"
 	)
 	controls.add_child(mode_button)
 	queue_redraw()
+
+
+func _physics_process(_delta: float) -> void:
+	for point in _delete_points:
+		var query := PhysicsPointQueryParameters2D.new()
+		query.position = get_canvas_transform().affine_inverse() * point
+		var hits := get_world_2d().direct_space_state.intersect_point(query)
+		for hit in hits:
+			var body: Object = hit.collider
+			if body in _created_bodies:
+				_created_bodies.erase(body)
+				body.queue_free()
+				break
+	_delete_points.clear()
 
 
 func _process(_delta: float) -> void:
@@ -84,6 +109,11 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_R:
 		reset()
+	elif _delete_mode:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_delete_points.append(event.position)
+		elif event is InputEventScreenTouch and event.pressed and not event.canceled:
+			_delete_points.append(event.position)
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and _touch_index == -1:
 			_begin_draw(to_local(event.position))
@@ -106,6 +136,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func reset() -> void:
 	_cancel_draw()
+	_delete_points.clear()
 	for body in _created_bodies:
 		body.queue_free()
 	_created_bodies.clear()

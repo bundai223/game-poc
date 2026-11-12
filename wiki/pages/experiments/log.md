@@ -17,4 +17,7 @@
 - 2026-11-12 [Update] 3D物理クラフト: PR #32のverifyとDagger CI成功を記録（raw/issues/2026-11-12_11/vehicle-craft-ci-result.md）
 - 2026-11-12 [Update] 3D物理クラフト: 既定車を4輪にしVehicle UIをASCII化、保存済み旧標準形を移行（raw/issues/2026-11-12_34/vehicle-4wheel-ui.md）
 - 2026-11-12 [Update] 3D物理クラフト: Issue #34の全33テスト成功と実機確認待ちを記録（raw/issues/2026-11-12_34/vehicle-4wheel-ui-verification.md）
+- 2026-11-12 [Update] 手描き輪郭の剛体化: タッチ位置の衝突判定による個別削除を記録（raw/issues/2026-11-12_38/delete-shape.md）
+
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 折れ線による切断モードと検証結果を記録（raw/issues/2026-11-12_36/cut-mode.md）
+- 2026-11-12 [Update] 手描き輪郭の剛体化: 切断と削除のモード切替を統合（raw/issues/2026-11-12_38/merge-cut-mode.md）
