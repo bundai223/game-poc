@@ -81,6 +81,7 @@ test('Web 版で削除モードから図形を個別に削除できる', async (
   const box = await canvas.boundingBox();
   expect(box).not.toBeNull();
   await page.mouse.click(box.x + box.width - 120, box.y + 250);
+  await page.mouse.click(box.x + box.width - 120, box.y + 250);
   await page.mouse.move(box.x + 50, box.y + 50);
   await page.waitForTimeout(200);
   const empty = await canvas.screenshot();
@@ -92,6 +93,7 @@ test('Web 版で削除モードから図形を個別に削除できる', async (
   await page.mouse.move(box.x + 100, box.y + 500);
   await page.mouse.up();
   await page.waitForTimeout(1500);
+  await page.mouse.click(box.x + box.width - 120, box.y + 250);
   await page.mouse.click(box.x + box.width - 120, box.y + 250);
   await expect.poll(async () => (await canvas.screenshot()).equals(empty)).toBe(false);
   await page.mouse.click(box.x + 175, box.y + 560);
