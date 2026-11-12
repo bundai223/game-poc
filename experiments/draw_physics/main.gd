@@ -258,13 +258,13 @@ func _open_vehicle_craft() -> void:
 func _begin_draw(point: Vector2) -> void:
 	_drawing = true
 	_outline = PackedVector2Array([point])
+	for body in _created_bodies:
+		_frozen_bodies[body] = [body.freeze, body.linear_velocity, body.angular_velocity]
+		body.freeze = true
 	if _cut_mode:
 		_cut_cursor = point
 		_direction_point = point
 		_last_motion_ms = Time.get_ticks_msec()
-		for body in _created_bodies:
-			_frozen_bodies[body] = [body.freeze, body.linear_velocity, body.angular_velocity]
-			body.freeze = true
 	queue_redraw()
 
 
@@ -313,7 +313,7 @@ func _finish_draw(point: Vector2) -> void:
 	_outline.clear()
 	if not points.is_empty():
 		spawn_body(OutlineData.new(points))
-	queue_redraw()
+	_cancel_draw()
 
 
 func _cancel_draw() -> void:

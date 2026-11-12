@@ -29,3 +29,4 @@
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 移動モードと検証範囲を記録（raw/issues/2026-11-12_45/drag-mode.md）
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 連結済み図形の移動制限と統合検証を記録（raw/issues/2026-11-12_45/connect-integration.md）
 - 2026-11-12 [Update] 手描き輪郭の剛体化: テスト用シーンの残存による物理テスト干渉と修正を記録（raw/issues/2026-11-12_45/physics-test-isolation.md）
+- 2026-11-12 [Update] 手描き輪郭の剛体化: Draw 中の物理停止と再開を記録（raw/issues/2026-11-12_49/draw-pause.md）
