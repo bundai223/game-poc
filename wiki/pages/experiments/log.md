@@ -9,3 +9,5 @@
 - 2026-11-07 [Update] 手描き輪郭の剛体化: 利用者による Android 操作確認を記録（raw/issues/2026-11-06_18/android-user-check.md）
 - 2026-11-08 [Update] 手描き輪郭の剛体化: 非ゼロのタッチ接触IDで描画できない問題を修正・検証（raw/issues/2026-11-08_18/ipad-touch-index.md）
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 凹形状も受け付けるよう輪郭制約を更新（raw/issues/2026-11-12_8/concave-outlines.md）
+- 2026-11-12 [Create] 3D物理クラフト: ブロック・駆動輪の配置と編集/試走サイクルを記録（raw/issues/2026-11-12_11/vehicle-craft-poc.md）
+- 2026-11-12 [Update] 3D物理クラフト: 画面遷移時の自動保存と再入場時の復元を記録（raw/issues/2026-11-12_11/vehicle-craft-autosave.md）

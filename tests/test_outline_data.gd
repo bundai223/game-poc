@@ -21,11 +21,18 @@ func test_invalid_outline_json_is_rejected() -> void:
 
 func test_part_id_and_transform_round_trip_through_json_without_a_scene_tree() -> void:
 	var transform := Transform3D(Basis(Vector3.RIGHT, Vector3(0, 2, 0), Vector3(0, 0, 3)), Vector3(4, 5, 6))
-	var part = PartData.new("wheel-1", transform)
+	var part = PartData.new("wheel-1", transform, "wheel")
 	var restored = PartData.from_json(part.to_json())
 	assert_object(restored).is_not_null()
 	assert_str(restored.id).is_equal("wheel-1")
+	assert_str(restored.kind).is_equal("wheel")
 	assert_bool(restored.transform.is_equal_approx(transform)).is_true()
+
+
+func test_legacy_part_json_defaults_to_block() -> void:
+	var restored = PartData.from_json('{"version":1,"id":"block-1","transform":[0,0,0,1,0,0,0,1,0,0,0,1]}')
+	assert_object(restored).is_not_null()
+	assert_str(restored.kind).is_equal("block")
 
 
 func test_invalid_part_json_is_rejected() -> void:

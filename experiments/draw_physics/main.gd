@@ -40,6 +40,16 @@ func _ready() -> void:
 	reset_button.offset_bottom = 104.0
 	reset_button.pressed.connect(reset)
 	controls.add_child(reset_button)
+	var craft_button := Button.new()
+	craft_button.name = "VehicleCraftButton"
+	craft_button.text = "3D Craft"
+	craft_button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	craft_button.offset_left = -216.0
+	craft_button.offset_top = 112.0
+	craft_button.offset_right = -24.0
+	craft_button.offset_bottom = 200.0
+	craft_button.pressed.connect(_open_vehicle_craft)
+	controls.add_child(craft_button)
 	queue_redraw()
 
 
@@ -84,6 +94,10 @@ func spawn_body(outline: OutlineData) -> RigidBody2D:
 	add_child(body)
 	_created_bodies.append(body)
 	return body
+
+
+func _open_vehicle_craft() -> void:
+	get_tree().change_scene_to_file("res://experiments/vehicle_craft/main.tscn")
 
 
 func _begin_draw(point: Vector2) -> void:

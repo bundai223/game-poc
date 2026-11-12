@@ -10,4 +10,4 @@
 | [reviews](pages/reviews/index.md) | レビューの結果と学び | 0 |
 | [concepts](pages/concepts/index.md) | 物理、計算幾何、描画などの概念 | 0 |
 | [entities](pages/entities/index.md) | 人、ツール、外部プロジェクト | 0 |
-| [experiments](pages/experiments/index.md) | PoC の目的、実装、結果、制約、次の実験 | 1 |
+| [experiments](pages/experiments/index.md) | PoC の目的、実装、結果、制約、次の実験 | 2 |
