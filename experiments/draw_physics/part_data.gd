@@ -1,11 +1,13 @@
 extends RefCounted
 
 var id: String
+var kind: String = "block"
 var transform: Transform3D
 
 
-func _init(part_id: String, part_transform: Transform3D = Transform3D.IDENTITY) -> void:
+func _init(part_id: String, part_transform: Transform3D = Transform3D.IDENTITY, part_kind: String = "block") -> void:
 	id = part_id
+	kind = part_kind
 	transform = part_transform
 
 
@@ -14,6 +16,7 @@ func to_json() -> String:
 	return JSON.stringify({
 		"version": 1,
 		"id": id,
+		"kind": kind,
 		"transform": [
 			transform.origin.x, transform.origin.y, transform.origin.z,
 			basis.x.x, basis.x.y, basis.x.z,
@@ -31,6 +34,9 @@ static func from_json(source: String):
 	if not _is_number(data.get("version")) or float(data["version"]) != 1.0 or typeof(data.get("id")) != TYPE_STRING:
 		return null
 	var part_id: String = data["id"]
+	var part_kind: String = data.get("kind", "block")
+	if typeof(part_kind) != TYPE_STRING or not ["block", "wheel"].has(part_kind):
+		return null
 	var values = data.get("transform")
 	if part_id.strip_edges().is_empty() or typeof(values) != TYPE_ARRAY or values.size() != 12:
 		return null
@@ -45,7 +51,7 @@ static func from_json(source: String):
 		Vector3(values[6], values[7], values[8]),
 		Vector3(values[9], values[10], values[11])
 	)
-	return new(part_id, Transform3D(basis, origin))
+	return new(part_id, Transform3D(basis, origin), part_kind)
 
 
 static func _is_number(value: Variant) -> bool:
