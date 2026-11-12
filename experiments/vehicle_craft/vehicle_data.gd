@@ -9,10 +9,16 @@ var connections: Array[Dictionary] = []
 static func create_starter():
 	var vehicle = new()
 	vehicle.add_part(PartData.new("block-1", Transform3D(Basis.IDENTITY, Vector3(0, 0.75, 0)), "block"))
+	vehicle.add_part(PartData.new("block-2", Transform3D(Basis.IDENTITY, Vector3(0, 0.75, 1)), "block"))
 	vehicle.add_part(PartData.new("wheel-1", Transform3D(Basis.IDENTITY, Vector3(-1, 0.5, 0)), "wheel"))
 	vehicle.add_part(PartData.new("wheel-2", Transform3D(Basis.IDENTITY, Vector3(1, 0.5, 0)), "wheel"))
+	vehicle.add_part(PartData.new("wheel-3", Transform3D(Basis.IDENTITY, Vector3(-1, 0.5, 1)), "wheel"))
+	vehicle.add_part(PartData.new("wheel-4", Transform3D(Basis.IDENTITY, Vector3(1, 0.5, 1)), "wheel"))
+	vehicle.add_connection("block-1", "block-2", "fixed")
 	vehicle.add_connection("block-1", "wheel-1", "hinge")
 	vehicle.add_connection("block-1", "wheel-2", "hinge")
+	vehicle.add_connection("block-2", "wheel-3", "hinge")
+	vehicle.add_connection("block-2", "wheel-4", "hinge")
 	return vehicle
 
 
@@ -126,6 +132,8 @@ static func from_json(source: String):
 			return null
 		if not vehicle.add_connection(item.a, item.b, item.kind):
 			return null
+	if vehicle._is_legacy_starter():
+		return create_starter()
 	return vehicle
 
 
@@ -135,6 +143,25 @@ func _has_block_hinge(part_id: String) -> bool:
 			continue
 		var other_id: String = connection.b if connection.a == part_id else connection.a if connection.b == part_id else ""
 		if not other_id.is_empty() and find_part(other_id).kind == "block":
+			return true
+	return false
+
+
+func _is_legacy_starter() -> bool:
+	if parts.size() != 3 or connections.size() != 2:
+		return false
+	var block = find_part("block-1")
+	var left_wheel = find_part("wheel-1")
+	var right_wheel = find_part("wheel-2")
+	return block != null and block.kind == "block" and block.transform.origin.is_equal_approx(Vector3(0, 0.75, 0)) and block.transform.basis.is_equal_approx(Basis.IDENTITY) \
+		and left_wheel != null and left_wheel.kind == "wheel" and left_wheel.transform.origin.is_equal_approx(Vector3(-1, 0.5, 0)) and left_wheel.transform.basis.is_equal_approx(Basis.IDENTITY) \
+		and right_wheel != null and right_wheel.kind == "wheel" and right_wheel.transform.origin.is_equal_approx(Vector3(1, 0.5, 0)) and right_wheel.transform.basis.is_equal_approx(Basis.IDENTITY) \
+		and _has_hinge("wheel-1") and _has_hinge("wheel-2")
+
+
+func _has_hinge(part_id: String) -> bool:
+	for connection in connections:
+		if connection.kind == "hinge" and ((connection.a == "block-1" and connection.b == part_id) or (connection.a == part_id and connection.b == "block-1")):
 			return true
 	return false
 
