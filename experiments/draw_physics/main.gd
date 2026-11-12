@@ -9,9 +9,12 @@ const FLOOR_HEIGHT := 32.0
 
 var _cut_mode := false
 var _cut_cursor := Vector2.ZERO
+var _direction_point := Vector2.ZERO
 var _last_motion_ms := 0
 const CUT_SLOW_SPEED := 80.0
 const CUT_PAUSE_MS := 150
+const CUT_DIRECTION_DISTANCE := 12.0
+const CUT_DIRECTION_COSINE := 0.70710678
 var _frozen_bodies := {}
 var _floor_y := 0.0
 var _drawing := false
@@ -103,6 +106,7 @@ func _process(_delta: float) -> void:
 	if _drawing and _cut_mode and Time.get_ticks_msec() - _last_motion_ms >= CUT_PAUSE_MS:
 		if _outline[-1].distance_to(_cut_cursor) >= 3.0:
 			_outline.append(_cut_cursor)
+			_direction_point = _cut_cursor
 			queue_redraw()
 
 
@@ -159,6 +163,7 @@ func _begin_draw(point: Vector2) -> void:
 	_outline = PackedVector2Array([point])
 	if _cut_mode:
 		_cut_cursor = point
+		_direction_point = point
 		_last_motion_ms = Time.get_ticks_msec()
 		for body in _created_bodies:
 			_frozen_bodies[body] = [body.freeze, body.linear_velocity, body.angular_velocity]
@@ -172,6 +177,13 @@ func _add_point(point: Vector2) -> void:
 		var elapsed := now - _last_motion_ms
 		if elapsed > 0 and _cut_cursor.distance_to(point) * 1000.0 / elapsed < CUT_SLOW_SPEED and _outline[-1].distance_to(_cut_cursor) >= 3.0:
 			_outline.append(_cut_cursor)
+			_direction_point = _cut_cursor
+		elif _direction_point.distance_to(point) >= CUT_DIRECTION_DISTANCE:
+			var incoming := _direction_point - _outline[-1]
+			var outgoing := point - _direction_point
+			if incoming.length() >= CUT_DIRECTION_DISTANCE and incoming.normalized().dot(outgoing.normalized()) < CUT_DIRECTION_COSINE:
+				_outline.append(_direction_point)
+			_direction_point = point
 		if _outline.size() >= 2048:
 			_cancel_draw()
 			return

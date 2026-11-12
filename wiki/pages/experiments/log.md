@@ -20,5 +20,7 @@
 - 2026-11-12 [Update] 手描き輪郭の剛体化: タッチ位置の衝突判定による個別削除を記録（raw/issues/2026-11-12_38/delete-shape.md）
 
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 折れ線による切断モードと検証結果を記録（raw/issues/2026-11-12_36/cut-mode.md）
+- 2026-11-12 [Update] 手描き輪郭の剛体化: 方向変化でも切断線の折れ点を追加（raw/issues/2026-11-12_41/cut-direction.md）
+
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 切断と削除のモード切替を統合（raw/issues/2026-11-12_38/merge-cut-mode.md）
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 図形と切断片に黒い境界線を追加（raw/issues/2026-11-12_37/shape-border.md）
