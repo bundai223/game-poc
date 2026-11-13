@@ -25,7 +25,6 @@ var _move_offset := Vector2.ZERO
 var _move_was_frozen := false
 var _move_active := false
 var _connect_mode := false
-var _selected_body: RigidBody2D
 var _connections: Array[PinJoint2D] = []
 var _connection_overlay: Node2D
 var _delete_points: Array[Vector2] = []
@@ -51,7 +50,7 @@ func _ready() -> void:
 
 	var instructions := Label.new()
 	instructions.position = Vector2(24.0, 20.0)
-	instructions.text = "Draw shapes. Use Mode to Cut, Delete, Connect or Move."
+	instructions.text = "Draw shapes. Connect draws a rigid connector between overlapping shapes."
 	add_child(instructions)
 	var controls := CanvasLayer.new()
 	add_child(controls)
@@ -86,7 +85,6 @@ func _ready() -> void:
 	mode_button.pressed.connect(func() -> void:
 		_cancel_draw()
 		_delete_points.clear()
-		_selected_body = null
 		queue_redraw()
 		if _cut_mode:
 			_cut_mode = false
@@ -116,23 +114,14 @@ func _physics_process(_delta: float) -> void:
 		var query := PhysicsPointQueryParameters2D.new()
 		query.position = get_canvas_transform().affine_inverse() * point
 		var hits := get_world_2d().direct_space_state.intersect_point(query)
-		var found := false
 		for hit in hits:
 			var body: Object = hit.collider
 			if body in _created_bodies:
-				found = true
-				if _connect_mode:
-					_select_connection_body(body)
-				else:
-					_remove_connections(body)
-					_created_bodies.erase(body)
-					body.queue_free()
+				_remove_connections(body)
+				_created_bodies.erase(body)
+				body.queue_free()
 				break
-		if _connect_mode and not found:
-			_selected_body = null
 	_delete_points.clear()
-	if _connect_mode:
-		queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -149,12 +138,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		reset()
 	elif _move_mode:
 		_move_input(event)
-	elif _delete_mode or _connect_mode:
-		if event is InputEventScreenTouch and event.canceled:
-			_selected_body = null
-			_delete_points.clear()
-			queue_redraw()
-		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	elif _delete_mode:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			_delete_points.append(event.position)
 		elif event is InputEventScreenTouch and event.pressed and not event.canceled:
 			_delete_points.append(event.position)
@@ -226,7 +211,6 @@ func _move_to(point: Vector2) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_cancel_draw()
-		_selected_body = null
 		_delete_points.clear()
 		queue_redraw()
 
@@ -234,7 +218,6 @@ func _notification(what: int) -> void:
 func reset() -> void:
 	_cancel_draw()
 	_delete_points.clear()
-	_selected_body = null
 	for joint in _connections:
 		joint.queue_free()
 	_connections.clear()
@@ -312,8 +295,56 @@ func _finish_draw(point: Vector2) -> void:
 	var points := Outline.prepare(_outline)
 	_outline.clear()
 	if not points.is_empty():
-		spawn_body(OutlineData.new(points))
+		if _connect_mode:
+			_connect_outline(points)
+		else:
+			spawn_body(OutlineData.new(points))
 	_cancel_draw()
+
+
+func _connect_outline(points: PackedVector2Array) -> void:
+	var connector_points := PackedVector2Array()
+	for point in points:
+		connector_points.append(to_global(point))
+	var overlaps: Array = []
+	for body in _created_bodies:
+		var visual := body.get_child(0) as Polygon2D
+		var body_points := PackedVector2Array()
+		for point in visual.polygon:
+			body_points.append(body.to_global(point))
+		var intersection := Geometry2D.intersect_polygons(connector_points, body_points)
+		var area := 0.0
+		var center := Vector2.ZERO
+		for overlap in intersection:
+			var signed_area := 0.0
+			var overlap_center := Vector2.ZERO
+			for i in overlap.size():
+				var point: Vector2 = overlap[i]
+				var next: Vector2 = overlap[(i + 1) % overlap.size()]
+				var cross := point.cross(next)
+				signed_area += cross
+				overlap_center += (point + next) * cross
+			var overlap_area := absf(signed_area) / 2.0
+			if overlap_area <= 0.0:
+				continue
+			area += overlap_area
+			center += overlap_center / (3.0 * signed_area) * overlap_area
+		if area > 0.5:
+			overlaps.append([body, center / area])
+	if overlaps.size() < 2:
+		return
+	var connector := spawn_body(OutlineData.new(points))
+	for overlap in overlaps:
+		var body := overlap[0] as RigidBody2D
+		var joint := PinJoint2D.new()
+		joint.position = to_local(overlap[1])
+		joint.angular_limit_enabled = true
+		joint.angular_limit_lower = wrapf(connector.global_rotation - body.global_rotation, -PI, PI)
+		joint.angular_limit_upper = joint.angular_limit_lower
+		add_child(joint)
+		joint.node_a = joint.get_path_to(connector)
+		joint.node_b = joint.get_path_to(body)
+		_connections.append(joint)
 
 
 func _cancel_draw() -> void:
@@ -365,8 +396,6 @@ func _draw_connections() -> void:
 		var first := joint.get_node(joint.node_a) as RigidBody2D
 		var second := joint.get_node(joint.node_b) as RigidBody2D
 		_connection_overlay.draw_line(first.position, second.position, Color(0.3, 0.9, 1.0), 4.0)
-	if _selected_body != null:
-		_connection_overlay.draw_circle(_selected_body.position, 8.0, Color(1.0, 0.8, 0.25))
 
 
 func _draw() -> void:
@@ -378,28 +407,7 @@ func _draw() -> void:
 		draw_polyline(preview, Color(1.0, 0.8, 0.25), 3.0, true)
 
 
-func _select_connection_body(body: RigidBody2D) -> void:
-	if _selected_body == null:
-		_selected_body = body
-	elif _selected_body == body:
-		_selected_body = null
-	else:
-		for joint in _connections:
-			if (joint.get_node(joint.node_a) == _selected_body and joint.get_node(joint.node_b) == body) or (joint.get_node(joint.node_b) == _selected_body and joint.get_node(joint.node_a) == body):
-				_selected_body = null
-				return
-		var joint := PinJoint2D.new()
-		joint.position = (_selected_body.position + body.position) / 2.0
-		add_child(joint)
-		joint.node_a = joint.get_path_to(_selected_body)
-		joint.node_b = joint.get_path_to(body)
-		_connections.append(joint)
-		_selected_body = null
-
-
 func _remove_connections(body: RigidBody2D) -> void:
-	if _selected_body == body:
-		_selected_body = null
 	for joint in _connections.duplicate():
 		if joint.get_node(joint.node_a) == body or joint.get_node(joint.node_b) == body:
 			_connections.erase(joint)
