@@ -30,3 +30,4 @@
 - 2026-11-12 [Update] 手描き輪郭の剛体化: 連結済み図形の移動制限と統合検証を記録（raw/issues/2026-11-12_45/connect-integration.md）
 - 2026-11-12 [Update] 手描き輪郭の剛体化: テスト用シーンの残存による物理テスト干渉と修正を記録（raw/issues/2026-11-12_45/physics-test-isolation.md）
 - 2026-11-12 [Update] 手描き輪郭の剛体化: Draw 中の物理停止と再開を記録（raw/issues/2026-11-12_49/draw-pause.md）
+- 2026-11-13 [Update] 手描き輪郭の剛体化: Connect モードで描いた図形を固定接続に使う（raw/issues/2026-11-13_49/drawn-connector.md）

@@ -573,147 +573,6 @@ func test_move_touch_empty_cancel_mode_and_reset() -> void:
 	assert_int(demo._created_bodies.size()).is_equal(0)
 
 
-func test_connect_mouse_touch_and_cleanup() -> void:
-	var demo := DrawPhysics.instantiate()
-	auto_free(demo)
-	add_child(demo)
-	var square := PackedVector2Array([Vector2(0, 0), Vector2(80, 0), Vector2(80, 80), Vector2(0, 80)])
-	var bodies: Array[RigidBody2D] = []
-	for x in [0, 150, 300]:
-		var body: RigidBody2D = demo.spawn_body(OutlineData.new(square))
-		body.position += Vector2(x, 100)
-		bodies.append(body)
-	await get_tree().physics_frame
-	var mode := demo.find_child("ModeButton", true, false) as Button
-	for i in 3:
-		mode.pressed.emit()
-	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
-	click.pressed = true
-	click.position = bodies[0].global_position
-	demo._unhandled_input(click)
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	var touch := InputEventScreenTouch.new()
-	touch.index = 7
-	touch.pressed = true
-	touch.position = bodies[1].global_position
-	demo._unhandled_input(touch)
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	demo._select_connection_body(bodies[1])
-	demo._select_connection_body(bodies[2])
-	assert_int(demo._connections.size()).is_equal(2)
-	demo._select_connection_body(bodies[0])
-	demo._select_connection_body(bodies[1])
-	demo._select_connection_body(bodies[2])
-	demo._select_connection_body(bodies[2])
-	assert_int(demo._connections.size()).is_equal(2)
-	var initial_distance := bodies[0].position.distance_to(bodies[1].position)
-	for i in 30:
-		await get_tree().physics_frame
-	assert_float(absf(bodies[0].position.distance_to(bodies[1].position) - initial_distance)).is_less(15.0)
-	mode.pressed.emit()
-	mode.pressed.emit()
-	mode.pressed.emit()
-	mode.pressed.emit()
-	click.position = bodies[1].global_position
-	demo._unhandled_input(click)
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	assert_int(demo._connections.size()).is_zero()
-	assert_int(demo._created_bodies.size()).is_equal(2)
-	demo._select_connection_body(bodies[0])
-	demo._select_connection_body(bodies[2])
-	demo.reset()
-	assert_int(demo._connections.size()).is_zero()
-
-
-func test_cut_removes_connections_and_mode_change_cancels_selection() -> void:
-	var demo := DrawPhysics.instantiate()
-	auto_free(demo)
-	add_child(demo)
-	var first: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(300, 100), Vector2(300, 300), Vector2(100, 300)])))
-	var second: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(400, 100), Vector2(500, 100), Vector2(500, 200), Vector2(400, 200)])))
-	demo._select_connection_body(first)
-	demo._select_connection_body(second)
-	demo._select_connection_body(second)
-	var mode := demo.find_child("ModeButton", true, false) as Button
-	mode.pressed.emit()
-	assert_object(demo._selected_body).is_null()
-	demo._begin_draw(Vector2(50, 200))
-	demo._finish_draw(Vector2(350, 200))
-	assert_int(demo._connections.size()).is_zero()
-	assert_int(demo._created_bodies.size()).is_equal(3)
-
-
-func test_connect_empty_cancel_and_focus_loss_clear_selection() -> void:
-	var demo := DrawPhysics.instantiate()
-	auto_free(demo)
-	add_child(demo)
-	var body: RigidBody2D = demo.spawn_body(OutlineData.new(PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(200, 200), Vector2(100, 200)])))
-	body.freeze = true
-	await get_tree().physics_frame
-	var mode := demo.find_child("ModeButton", true, false) as Button
-	for i in 3:
-		mode.pressed.emit()
-	demo._select_connection_body(body)
-	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
-	click.pressed = true
-	click.position = Vector2(20, 100)
-	demo._unhandled_input(click)
-	await get_tree().physics_frame
-	await get_tree().physics_frame
-	assert_object(demo._selected_body).is_null()
-	demo._select_connection_body(body)
-	var touch := InputEventScreenTouch.new()
-	touch.canceled = true
-	demo._unhandled_input(touch)
-	assert_object(demo._selected_body).is_null()
-	demo._select_connection_body(body)
-	demo._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
-	assert_object(demo._selected_body).is_null()
-
-
-func test_move_does_not_move_connected_bodies() -> void:
-	var demo := DrawPhysics.instantiate()
-	auto_free(demo)
-	add_child(demo)
-	var square := PackedVector2Array([Vector2(100, 100), Vector2(200, 100), Vector2(200, 200), Vector2(100, 200)])
-	var first: RigidBody2D = demo.spawn_body(OutlineData.new(square))
-	var second: RigidBody2D = demo.spawn_body(OutlineData.new(square))
-	second.position += Vector2(200, 0)
-	demo._select_connection_body(first)
-	demo._select_connection_body(second)
-	var mode := demo.find_child("ModeButton", true, false) as Button
-	for i in range(4):
-		mode.pressed.emit()
-	var mouse := InputEventMouseButton.new()
-	mouse.button_index = MOUSE_BUTTON_LEFT
-	mouse.pressed = true
-	mouse.position = first.position
-	demo._unhandled_input(mouse)
-	var motion := InputEventMouseMotion.new()
-	motion.position = Vector2(500, 300)
-	demo._unhandled_input(motion)
-	assert_bool(first.position.is_equal_approx(Vector2(150, 150))).is_true()
-	assert_bool(first.freeze).is_false()
-	mouse.pressed = false
-	demo._unhandled_input(mouse)
-	var touch := InputEventScreenTouch.new()
-	touch.index = 7
-	touch.pressed = true
-	touch.position = second.position
-	demo._unhandled_input(touch)
-	var drag := InputEventScreenDrag.new()
-	drag.index = 7
-	drag.position = Vector2(500, 300)
-	demo._unhandled_input(drag)
-	assert_bool(second.position.is_equal_approx(Vector2(350, 150))).is_true()
-	assert_int(demo._connections.size()).is_equal(1)
-
-
 func test_draw_freezes_and_restores_existing_motion_on_finish_or_cancel() -> void:
 	var demo := DrawPhysics.instantiate()
 	auto_free(demo)
@@ -772,3 +631,82 @@ func test_draw_freezes_and_restores_existing_motion_on_finish_or_cancel() -> voi
 	demo.reset()
 	assert_bool(demo._frozen_bodies.is_empty()).is_true()
 	assert_int(demo._created_bodies.size()).is_zero()
+
+
+func test_connect_mode_draws_connector_between_overlapping_bodies() -> void:
+	var demo := DrawPhysics.instantiate()
+	auto_free(demo)
+	add_child(demo)
+	var square := PackedVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
+	var first: RigidBody2D = demo.spawn_body(OutlineData.new(square))
+	first.position = Vector2(100, 200)
+	var second: RigidBody2D = demo.spawn_body(OutlineData.new(square))
+	second.position = Vector2(300, 200)
+	first.linear_velocity = Vector2(0, 20)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	for i in 3:
+		mode.pressed.emit()
+	assert_str(mode.text).is_equal("Mode: Connect")
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(130, 220)
+	demo._unhandled_input(press)
+	var motion := InputEventMouseMotion.new()
+	for point in [Vector2(270, 220), Vector2(270, 280), Vector2(130, 280)]:
+		motion.position = point
+		demo._unhandled_input(motion)
+	press.pressed = false
+	press.position = Vector2(130, 220)
+	demo._unhandled_input(press)
+	assert_int(demo._created_bodies.size()).is_equal(3)
+	assert_int(demo._connections.size()).is_equal(2)
+	for joint in demo._connections:
+		assert_object(joint).is_instanceof(PinJoint2D)
+		assert_bool(joint.angular_limit_enabled).is_true()
+		assert_float(joint.angular_limit_lower).is_equal(0.0)
+		assert_float(joint.angular_limit_upper).is_equal(0.0)
+	var initial_distance := first.position.distance_to(second.position)
+	for i in 10:
+		await get_tree().physics_frame
+	assert_bool(absf(first.position.distance_to(second.position) - initial_distance) < 1.0).is_true()
+	for i in 4:
+		mode.pressed.emit()
+	var delete := InputEventMouseButton.new()
+	delete.button_index = MOUSE_BUTTON_LEFT
+	delete.pressed = true
+	delete.position = demo._created_bodies[2].global_position
+	demo._unhandled_input(delete)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	assert_int(demo._connections.size()).is_zero()
+	assert_int(demo._created_bodies.size()).is_equal(2)
+	demo.reset()
+	assert_int(demo._connections.size()).is_zero()
+
+
+func test_connect_mode_touch_requires_two_overlapping_bodies() -> void:
+	var demo := DrawPhysics.instantiate()
+	auto_free(demo)
+	add_child(demo)
+	var square := PackedVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
+	var body: RigidBody2D = demo.spawn_body(OutlineData.new(square))
+	body.position = Vector2(200, 200)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	for i in 3:
+		mode.pressed.emit()
+	var touch := InputEventScreenTouch.new()
+	touch.index = 7
+	touch.pressed = true
+	touch.position = Vector2(170, 220)
+	demo._unhandled_input(touch)
+	var drag := InputEventScreenDrag.new()
+	drag.index = 7
+	for point in [Vector2(230, 220), Vector2(230, 280), Vector2(170, 280)]:
+		drag.position = point
+		demo._unhandled_input(drag)
+	touch.pressed = false
+	touch.position = Vector2(170, 220)
+	demo._unhandled_input(touch)
+	assert_int(demo._created_bodies.size()).is_equal(1)
+	assert_int(demo._connections.size()).is_zero()
