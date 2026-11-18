@@ -32,3 +32,5 @@
 - 2026-11-12 [Update] 手描き輪郭の剛体化: Draw 中の物理停止と再開を記録（raw/issues/2026-11-12_49/draw-pause.md）
 - 2026-11-13 [Update] 手描き輪郭の剛体化: Connect モードで描いた図形を固定接続に使う（raw/issues/2026-11-13_49/drawn-connector.md）
 - 2026-11-14 [Update] 手描き輪郭の剛体化: Connect で連結した図形群を Move で動かせないという未検証の利用者報告を記録（raw/issues/2026-11-14_62/move-connected-bodies.md）
+
+- 2026-11-18 [Update] 手描き輪郭の剛体化: Issue #62 の連結群 Move 修正と58件のテスト成功を記録（根拠 raw/issues/2026-11-18_62/connected-move.md）

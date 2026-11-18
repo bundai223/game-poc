@@ -20,9 +20,8 @@ var _floor_y := 0.0
 var _drawing := false
 var _delete_mode := false
 var _move_mode := false
-var _move_body: RigidBody2D
-var _move_offset := Vector2.ZERO
-var _move_was_frozen := false
+var _move_bodies := {}
+var _move_point := Vector2.ZERO
 var _move_active := false
 var _connect_mode := false
 var _connections: Array[PinJoint2D] = []
@@ -191,21 +190,31 @@ func _begin_move(point: Vector2) -> void:
 		var body := _created_bodies[index]
 		var visual: Polygon2D = body.get_child(0)
 		if Geometry2D.is_point_in_polygon(body.to_local(to_global(point)), visual.polygon):
-			for joint in _connections:
-				if joint.get_node(joint.node_a) == body or joint.get_node(joint.node_b) == body:
-					return
-			_move_body = body
-			_move_offset = body.position - point
-			_move_was_frozen = body.freeze
-			body.freeze = true
-			body.linear_velocity = Vector2.ZERO
-			body.angular_velocity = 0.0
+			var pending: Array[RigidBody2D] = [body]
+			while not pending.is_empty():
+				var current: RigidBody2D = pending.pop_back()
+				if _move_bodies.has(current):
+					continue
+				_move_bodies[current] = current.freeze
+				current.freeze = true
+				current.linear_velocity = Vector2.ZERO
+				current.angular_velocity = 0.0
+				for joint in _connections:
+					var first := joint.get_node(joint.node_a) as RigidBody2D
+					var second := joint.get_node(joint.node_b) as RigidBody2D
+					if first == current:
+						pending.append(second)
+					elif second == current:
+						pending.append(first)
+			_move_point = point
 			break
 
 
 func _move_to(point: Vector2) -> void:
-	if is_instance_valid(_move_body):
-		_move_body.position = point + _move_offset
+	var offset := point - _move_point
+	for body in _move_bodies:
+		body.position += offset
+	_move_point = point
 
 
 func _notification(what: int) -> void:
@@ -348,10 +357,11 @@ func _connect_outline(points: PackedVector2Array) -> void:
 
 
 func _cancel_draw() -> void:
-	if is_instance_valid(_move_body):
-		_move_body.freeze = _move_was_frozen
-		_move_body.sleeping = false
-	_move_body = null
+	for body in _move_bodies:
+		if is_instance_valid(body):
+			body.freeze = _move_bodies[body]
+			body.sleeping = false
+	_move_bodies.clear()
 	_move_active = false
 	_drawing = false
 	_touch_index = -1

@@ -710,3 +710,113 @@ func test_connect_mode_touch_requires_two_overlapping_bodies() -> void:
 	demo._unhandled_input(touch)
 	assert_int(demo._created_bodies.size()).is_equal(1)
 	assert_int(demo._connections.size()).is_zero()
+
+
+func _connected_move_scene() -> Node2D:
+	var demo := DrawPhysics.instantiate()
+	auto_free(demo)
+	add_child(demo)
+	var square := PackedVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
+	for x in [100, 300, 500, 800]:
+		var body: RigidBody2D = demo.spawn_body(OutlineData.new(square))
+		body.position = Vector2(x, 200)
+		body.freeze = true
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	for i in 3:
+		mode.pressed.emit()
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	var motion := InputEventMouseMotion.new()
+	for x in [130, 330, 130]:
+		press.pressed = true
+		press.position = Vector2(x, 220)
+		demo._unhandled_input(press)
+		for point in [Vector2(x + 140, 220), Vector2(x + 140, 280), Vector2(x, 280)]:
+			motion.position = point
+			demo._unhandled_input(motion)
+		press.pressed = false
+		demo._unhandled_input(press)
+	mode.pressed.emit()
+	return demo
+
+
+func test_move_mouse_translates_connected_cycle_and_preserves_joints() -> void:
+	var demo := _connected_move_scene()
+	assert_int(demo._connections.size()).is_equal(7)
+	var bodies: Array = demo._created_bodies.duplicate()
+	var positions: Array[Vector2] = []
+	for body in bodies:
+		positions.append(body.position)
+		body.linear_velocity = Vector2(10, 20)
+		body.angular_velocity = 0.3
+	bodies[0].freeze = false
+	var joints: Array = demo._connections.duplicate()
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(80, 200)
+	demo._unhandled_input(press)
+	for body in bodies:
+		assert_bool(body.freeze).is_true()
+	var motion := InputEventMouseMotion.new()
+	motion.position = Vector2(120, 230)
+	demo._unhandled_input(motion)
+	press.pressed = false
+	press.position = Vector2(140, 240)
+	demo._unhandled_input(press)
+	for i in bodies.size():
+		var offset := Vector2.ZERO if i == 3 else Vector2(60, 40)
+		assert_vector(bodies[i].position).is_equal(positions[i] + offset)
+		if i != 3:
+			assert_vector(bodies[i].linear_velocity).is_equal(Vector2.ZERO)
+			assert_float(bodies[i].angular_velocity).is_zero()
+	assert_bool(bodies[0].freeze).is_false()
+	assert_bool(bodies[1].freeze).is_true()
+	assert_array(demo._connections).is_equal(joints)
+	for i in 10:
+		await get_tree().physics_frame
+	assert_float(bodies[0].position.distance_to(bodies[1].position)).is_equal_approx(200.0, 1.0)
+
+
+func test_move_touch_connector_tracks_one_finger_and_cancels_group() -> void:
+	var demo := _connected_move_scene()
+	var body: RigidBody2D = demo._created_bodies[0]
+	body.freeze = false
+	var touch := InputEventScreenTouch.new()
+	touch.index = 7
+	touch.pressed = true
+	touch.position = Vector2(200, 250)
+	demo._unhandled_input(touch)
+	var drag := InputEventScreenDrag.new()
+	drag.index = 8
+	drag.position = Vector2(230, 270)
+	demo._unhandled_input(drag)
+	assert_vector(body.position).is_equal(Vector2(100, 200))
+	drag.index = 7
+	demo._unhandled_input(drag)
+	assert_vector(body.position).is_equal(Vector2(130, 220))
+	touch.pressed = false
+	touch.canceled = true
+	demo._unhandled_input(touch)
+	assert_bool(body.freeze).is_false()
+	assert_bool(demo._created_bodies[1].freeze).is_true()
+	assert_bool(demo._move_active).is_false()
+	touch.pressed = true
+	touch.canceled = false
+	touch.position = Vector2(230, 270)
+	demo._unhandled_input(touch)
+	demo._notification(NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_bool(body.freeze).is_false()
+	assert_bool(demo._move_active).is_false()
+	demo._unhandled_input(touch)
+	var mode := demo.find_child("ModeButton", true, false) as Button
+	mode.pressed.emit()
+	assert_bool(body.freeze).is_false()
+	assert_bool(demo._move_active).is_false()
+	for i in 4:
+		mode.pressed.emit()
+	demo._unhandled_input(touch)
+	demo.reset()
+	assert_int(demo._created_bodies.size()).is_zero()
+	assert_int(demo._connections.size()).is_zero()
+	assert_bool(demo._move_active).is_false()
